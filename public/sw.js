@@ -28,6 +28,17 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Do not intercept non-GET requests or Firebase/Firestore API endpoints
+  if (
+    event.request.method !== 'GET' ||
+    !event.request.url.startsWith('http') ||
+    event.request.url.includes('firestore.googleapis.com') ||
+    event.request.url.includes('identitytoolkit') ||
+    event.request.url.includes('firebase')
+  ) {
+    return;
+  }
+
   // Navigation requests: try network first, fallback to offline cache
   if (event.request.mode === 'navigate') {
     event.respondWith(

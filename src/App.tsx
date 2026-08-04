@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FuelLog, MaintenanceLog, User, TabType } from './types';
 import { INITIAL_FUEL_LOGS, INITIAL_MAINTENANCE_LOGS } from './data/initialData';
 import { Language } from './lib/translations';
@@ -167,6 +167,13 @@ export default function App() {
     return INITIAL_MAINTENANCE_LOGS;
   });
 
+  // Keep refs to current state to prevent stale closure during Firestore callbacks
+  const fuelLogsRef = useRef(fuelLogs);
+  useEffect(() => { fuelLogsRef.current = fuelLogs; }, [fuelLogs]);
+
+  const maintenanceLogsRef = useRef(maintenanceLogs);
+  useEffect(() => { maintenanceLogsRef.current = maintenanceLogs; }, [maintenanceLogs]);
+
   // Custom Service Target & Odometer Settings (Synced Online)
   const [customServiceTarget, setCustomServiceTarget] = useState<number | null>(() => {
     const saved = localStorage.getItem('fuelflow_next_service_target');
@@ -200,8 +207,9 @@ export default function App() {
           setFuelLogs(docs);
         } else {
           // If Firestore is empty for user, upload existing local logs to Firestore so user doesn't lose them
-          if (fuelLogs.length > 0) {
-            fuelLogs.forEach(async (log) => {
+          const logsToUpload = fuelLogsRef.current;
+          if (logsToUpload.length > 0) {
+            logsToUpload.forEach(async (log) => {
               const payload = sanitizeForFirestore({
                 ...log,
                 userId: targetUid,
@@ -236,8 +244,9 @@ export default function App() {
           setMaintenanceLogs(docs);
         } else {
           // If Firestore is empty for user, upload local maintenance logs
-          if (maintenanceLogs.length > 0) {
-            maintenanceLogs.forEach(async (log) => {
+          const logsToUpload = maintenanceLogsRef.current;
+          if (logsToUpload.length > 0) {
+            logsToUpload.forEach(async (log) => {
               const payload = sanitizeForFirestore({
                 ...log,
                 userId: targetUid,

@@ -418,7 +418,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="pt-2 flex items-center justify-between gap-2">
               <button
                 type="button"
-                onClick={() => handleSaveCustomTarget(null)}
+                onClick={() => handleSaveTarget(null)}
                 className="px-3 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white text-xs font-bold flex items-center gap-1.5 transition"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -430,7 +430,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 onClick={() => {
                   const val = parseInt(inputTargetKm, 10);
                   if (!isNaN(val) && val > 0) {
-                    handleSaveCustomTarget(val);
+                    handleSaveTarget(val);
                   }
                 }}
                 className="px-5 py-2.5 rounded-2xl bg-[#FF5200] hover:bg-[#E04800] text-white text-xs font-extrabold shadow-lg shadow-[#FF5200]/30 transition flex items-center gap-1.5"
@@ -502,7 +502,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="pt-2 flex items-center justify-between gap-2">
               <button
                 type="button"
-                onClick={() => handleSaveCustomOdometer(null)}
+                onClick={() => handleSaveOdometer(null)}
                 className="px-3 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white text-xs font-bold flex items-center gap-1.5 transition"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -514,7 +514,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 onClick={() => {
                   const val = parseInt(inputOdometerKm, 10);
                   if (!isNaN(val) && val >= 0) {
-                    handleSaveCustomOdometer(val);
+                    handleSaveOdometer(val);
                   }
                 }}
                 className="px-5 py-2.5 rounded-2xl bg-[#FF5200] hover:bg-[#E04800] text-white text-xs font-extrabold shadow-lg shadow-[#FF5200]/30 transition flex items-center gap-1.5"
