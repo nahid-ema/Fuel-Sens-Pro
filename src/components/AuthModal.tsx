@@ -48,27 +48,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
 
     setLoading(true);
+    const trimmedEmail = email.trim().toLowerCase();
+    const displayName = name.trim() || trimmedEmail.split('@')[0] || 'Rider';
+
     try {
+      let userCred;
       if (mode === 'signup') {
-        let userCred;
         try {
-          userCred = await createUserWithEmailAndPassword(auth, email.trim(), password);
+          userCred = await createUserWithEmailAndPassword(auth, trimmedEmail, password);
         } catch (e: any) {
-          if (e?.code === 'auth/operation-not-allowed' || e?.message?.includes('operation-not-allowed')) {
-            const displayName = name.trim() || email.split('@')[0] || 'Driver';
-            onAuthenticate({
-              email: email.trim(),
-              name: displayName,
-              isGuest: false,
-              uid: 'user_' + Date.now()
-            });
-            onClose();
-            return;
+          if (e?.code === 'auth/email-already-in-use') {
+            userCred = await signInWithEmailAndPassword(auth, trimmedEmail, password);
+          } else {
+            throw e;
           }
-          throw e;
         }
 
-        const displayName = name.trim() || email.split('@')[0];
         if (userCred?.user) {
           await updateProfile(userCred.user, { displayName }).catch(() => {});
           await setDoc(doc(db, 'users', userCred.user.uid), {
@@ -78,46 +73,51 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             createdAt: serverTimestamp()
           }).catch(() => {});
         }
+      } else {
+        // Mode: Login
+        try {
+          userCred = await signInWithEmailAndPassword(auth, trimmedEmail, password);
+        } catch (e: any) {
+          if (e?.code === 'auth/user-not-found' || e?.code === 'auth/invalid-credential') {
+            // Auto register if user doesn't exist
+            userCred = await createUserWithEmailAndPassword(auth, trimmedEmail, password);
+            if (userCred?.user) {
+              await updateProfile(userCred.user, { displayName }).catch(() => {});
+              await setDoc(doc(db, 'users', userCred.user.uid), {
+                uid: userCred.user.uid,
+                email: userCred.user.email,
+                name: displayName,
+                createdAt: serverTimestamp()
+              }).catch(() => {});
+            }
+          } else {
+            throw e;
+          }
+        }
+      }
+
+      if (userCred?.user) {
         onAuthenticate({
-          email: userCred.user.email || email.trim(),
-          name: displayName,
+          email: userCred.user.email || trimmedEmail,
+          name: userCred.user.displayName || displayName,
           isGuest: false,
           uid: userCred.user.uid
         });
       } else {
-        let userCred;
-        try {
-          userCred = await signInWithEmailAndPassword(auth, email.trim(), password);
-        } catch (e: any) {
-          if (e?.code === 'auth/operation-not-allowed' || e?.message?.includes('operation-not-allowed')) {
-            const displayName = name.trim() || email.split('@')[0] || 'Driver';
-            onAuthenticate({
-              email: email.trim(),
-              name: displayName,
-              isGuest: false,
-              uid: 'user_' + Date.now()
-            });
-            onClose();
-            return;
-          }
-          throw e;
-        }
-
+        const fallbackUid = 'usr_' + btoa(trimmedEmail).replace(/[^a-zA-Z0-9]/g, '').slice(0, 20);
         onAuthenticate({
-          email: userCred.user.email || email.trim(),
-          name: userCred.user.displayName || email.split('@')[0],
+          email: trimmedEmail,
+          name: displayName,
           isGuest: false,
-          uid: userCred.user.uid
+          uid: fallbackUid
         });
       }
       onClose();
     } catch (err: any) {
-      let msg = err?.message || 'Authentication failed. Please check your credentials.';
-      if (msg.includes('auth/invalid-credential') || msg.includes('auth/wrong-password') || msg.includes('auth/user-not-found')) {
-        msg = lang === 'bn' ? 'ভুল ইমেইল বা পাসওয়ার্ড। অনুগ্রহ করে আবার চেষ্টা করুন।' : 'Invalid email or password. Please check and try again.';
-      } else if (msg.includes('auth/email-already-in-use')) {
-        msg = lang === 'bn' ? 'এই ইমেইল দিয়ে আগেই অ্যাকাউন্ট করা রয়েছে। সাইন ইন করুন।' : 'An account with this email already exists. Please sign in instead.';
-      } else if (msg.includes('auth/weak-password')) {
+      let msg = err?.message || 'Authentication error occurred.';
+      if (err?.code === 'auth/wrong-password') {
+        msg = lang === 'bn' ? 'ভুল পাসওয়ার্ড। আবার চেষ্টা করুন।' : 'Incorrect password. Please try again.';
+      } else if (err?.code === 'auth/weak-password') {
         msg = lang === 'bn' ? 'পাসওয়ার্ড অন্তত ৬ অক্ষরের হতে হবে।' : 'Password should be at least 6 characters.';
       }
       setError(msg);

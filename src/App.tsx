@@ -27,6 +27,21 @@ import {
   serverTimestamp
 } from './lib/firebase';
 
+// Helper to remove undefined or null values before saving to Firestore
+function sanitizeForFirestore<T extends Record<string, any>>(obj: T): Record<string, any> {
+  const clean: Record<string, any> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined && value !== null) {
+      if (typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date) && typeof value?.toDate !== 'function') {
+        clean[key] = sanitizeForFirestore(value);
+      } else {
+        clean[key] = value;
+      }
+    }
+  }
+  return clean;
+}
+
 export default function App() {
   // Language State (English vs Bangla)
   const [lang, setLang] = useState<Language>(() => {
@@ -75,7 +90,8 @@ export default function App() {
     return {
       email: 'guest@fuelflow.app',
       name: 'Guest Driver',
-      isGuest: true
+      isGuest: true,
+      uid: 'guest_driver'
     };
   });
 
@@ -110,7 +126,8 @@ export default function App() {
     const guestUser: User = {
       email: 'guest@fuelflow.app',
       name: 'Guest Driver',
-      isGuest: true
+      isGuest: true,
+      uid: 'guest_driver'
     };
     setUser(guestUser);
     localStorage.removeItem('fuelflow_user');
@@ -146,12 +163,12 @@ export default function App() {
 
   // Real-time Firestore Sync for Fuel Logs & Maintenance Logs
   useEffect(() => {
-    if (!user?.uid) return;
+    const targetUid = user?.uid || 'guest_driver';
 
     // Fuel Logs Query
     const fuelQuery = query(
       collection(db, 'fuelLogs'),
-      where('userId', '==', user.uid)
+      where('userId', '==', targetUid)
     );
 
     const unsubFuel = onSnapshot(fuelQuery, (snapshot) => {
@@ -167,7 +184,7 @@ export default function App() {
     // Maintenance Logs Query
     const maintQuery = query(
       collection(db, 'maintenanceLogs'),
-      where('userId', '==', user.uid)
+      where('userId', '==', targetUid)
     );
 
     const unsubMaint = onSnapshot(maintQuery, (snapshot) => {
@@ -207,70 +224,70 @@ export default function App() {
   // Handlers for Add Fuel
   const handleAddFuelLog = async (newLogData: Omit<FuelLog, 'id'>) => {
     const id = `fuel-${Date.now()}`;
+    const targetUid = user?.uid || 'guest_driver';
     const newLog: FuelLog = {
       ...newLogData,
       id,
-      userId: user?.uid
+      userId: targetUid
     };
 
     setFuelLogs((prev) => [newLog, ...prev]);
 
-    if (user?.uid) {
-      try {
-        await setDoc(doc(db, 'fuelLogs', id), {
-          ...newLog,
-          createdAt: serverTimestamp()
-        });
-      } catch (err) {
-        console.error('Firestore save fuel log error:', err);
-      }
+    try {
+      const payload = sanitizeForFirestore({
+        ...newLog,
+        createdAt: serverTimestamp()
+      });
+      await setDoc(doc(db, 'fuelLogs', id), payload);
+      console.log('Online fuel log saved to Firestore:', id);
+    } catch (err) {
+      console.error('Firestore save fuel log error:', err);
     }
   };
 
   const handleDeleteFuelLog = async (id: string) => {
     setFuelLogs((prev) => prev.filter((log) => log.id !== id));
 
-    if (user?.uid) {
-      try {
-        await deleteDoc(doc(db, 'fuelLogs', id));
-      } catch (err) {
-        console.error('Firestore delete fuel log error:', err);
-      }
+    try {
+      await deleteDoc(doc(db, 'fuelLogs', id));
+      console.log('Online fuel log deleted from Firestore:', id);
+    } catch (err) {
+      console.error('Firestore delete fuel log error:', err);
     }
   };
 
   // Handlers for Add Maintenance
   const handleAddMaintenanceLog = async (newLogData: Omit<MaintenanceLog, 'id'>) => {
     const id = `maint-${Date.now()}`;
+    const targetUid = user?.uid || 'guest_driver';
     const newLog: MaintenanceLog = {
       ...newLogData,
       id,
-      userId: user?.uid
+      userId: targetUid
     };
 
     setMaintenanceLogs((prev) => [newLog, ...prev]);
 
-    if (user?.uid) {
-      try {
-        await setDoc(doc(db, 'maintenanceLogs', id), {
-          ...newLog,
-          createdAt: serverTimestamp()
-        });
-      } catch (err) {
-        console.error('Firestore save maintenance log error:', err);
-      }
+    try {
+      const payload = sanitizeForFirestore({
+        ...newLog,
+        createdAt: serverTimestamp()
+      });
+      await setDoc(doc(db, 'maintenanceLogs', id), payload);
+      console.log('Online maintenance log saved to Firestore:', id);
+    } catch (err) {
+      console.error('Firestore save maintenance log error:', err);
     }
   };
 
   const handleDeleteMaintenanceLog = async (id: string) => {
     setMaintenanceLogs((prev) => prev.filter((log) => log.id !== id));
 
-    if (user?.uid) {
-      try {
-        await deleteDoc(doc(db, 'maintenanceLogs', id));
-      } catch (err) {
-        console.error('Firestore delete maintenance log error:', err);
-      }
+    try {
+      await deleteDoc(doc(db, 'maintenanceLogs', id));
+      console.log('Online maintenance log deleted from Firestore:', id);
+    } catch (err) {
+      console.error('Firestore delete maintenance log error:', err);
     }
   };
 
