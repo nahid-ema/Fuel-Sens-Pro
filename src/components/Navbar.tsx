@@ -101,7 +101,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               title="Click to switch user or edit profile"
             >
               <UserIcon className="w-3.5 h-3.5 text-[#FF5200]" />
-              <span className="max-w-[120px] truncate">{user.isGuest ? (lang === 'bn' ? 'গেস্ট মোড' : 'Guest Mode') : user.email}</span>
+              <span className="max-w-[120px] truncate">{user.name || user.email}</span>
             </button>
           ) : (
             <button
@@ -130,7 +130,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     {lang === 'bn' ? 'ফুয়েল ফ্লো অপশনস' : 'Fuel Flow Options'}
                   </p>
                   <p className="text-[10px] text-slate-500 dark:text-zinc-400">
-                    {user ? (user.isGuest ? (lang === 'bn' ? 'গেস্ট সেশন' : 'Guest Session') : user.email) : (lang === 'bn' ? 'লগইন করা নেই' : 'Not Logged In')}
+                    {user ? user.email : (lang === 'bn' ? 'লগইন করা নেই' : 'Not Logged In')}
                   </p>
                 </div>
 
@@ -215,7 +215,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 >
                   <div className="flex items-center gap-3">
                     <UserIcon className="w-4 h-4 text-[#FF5200]" />
-                    <span>{lang === 'bn' ? 'লগইন মেথড (গুগল, ইমেইল, গেস্ট)' : 'Login Methods (Google, Email, Guest)'}</span>
+                    <span>{lang === 'bn' ? 'অ্যাকাউন্ট সাইন ইন' : 'Account & Sign In'}</span>
                   </div>
                 </button>
 
@@ -228,7 +228,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
                   >
                     <LogOut className="w-4 h-4" />
-                    <span>{user.isGuest ? (lang === 'bn' ? 'গেস্ট মোড থেকে বের হন' : 'Exit Guest Mode') : (lang === 'bn' ? 'সাইন আউট' : 'Sign Out')}</span>
+                    <span>{lang === 'bn' ? 'সাইন আউট' : 'Sign Out'}</span>
                   </button>
                 ) : null}
               </div>
