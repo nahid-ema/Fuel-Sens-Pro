@@ -559,7 +559,7 @@ export default function App() {
   // Calculate highest odometer for smart defaulting in modals
   const highestOdometerFromFuel = fuelLogs.reduce((max, log) => Math.max(max, log.odometerKm || 0), 0);
   const highestOdometerFromMaint = maintenanceLogs.reduce((max, log) => Math.max(max, log.odometerKm || 0), 0);
-  const latestOdometer = Math.max(highestOdometerFromFuel, highestOdometerFromMaint, 42500);
+  const latestOdometer = Math.max(highestOdometerFromFuel, highestOdometerFromMaint, 0);
 
   // 5. Active Tab State
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
