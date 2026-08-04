@@ -23,7 +23,9 @@ import {
   doc,
   setDoc,
   getDoc,
+  getDocs,
   getDocFromServer,
+  getDocsFromServer,
   deleteDoc,
   onSnapshot,
   query,
@@ -367,6 +369,16 @@ export default function App() {
     };
     setUser(guestUser);
     localStorage.removeItem('fuelflow_user');
+    
+    // Clear local data on sign out so next user gets a fresh slate
+    setFuelLogs([]);
+    setMaintenanceLogs([]);
+    setCustomServiceTarget(null);
+    setCustomCurrentOdometer(null);
+    localStorage.removeItem('fuelflow_fuel_logs');
+    localStorage.removeItem('fuelflow_maintenance_logs');
+    localStorage.removeItem('fuelflow_next_service_target');
+    localStorage.removeItem('fuelflow_current_odometer');
   };
 
   // Handlers for Save Custom Target & Odometer to Firestore Online
@@ -509,11 +521,61 @@ export default function App() {
         pingBy: targetUid
       });
       await getDocFromServer(doc(db, 'testSync', 'ping'));
+      
+      // 1. FETCH & RESTORE FROM CLOUD FIRST
+      const fuelQuery = query(collection(db, 'fuelLogs'), where('userId', '==', targetUid));
+      const maintQuery = query(collection(db, 'maintenanceLogs'), where('userId', '==', targetUid));
+      
+      const [fuelSnap, maintSnap] = await Promise.all([
+        getDocsFromServer(fuelQuery),
+        getDocsFromServer(maintQuery)
+      ]);
+      
+      const cloudFuelDocs = fuelSnap.docs.map(d => ({ id: d.id, ...d.data() } as FuelLog));
+      const cloudMaintDocs = maintSnap.docs.map(d => ({ id: d.id, ...d.data() } as MaintenanceLog));
+      
+      // Merge with local logs
+      setFuelLogs((prev) => {
+        const mergedMap = new Map<string, FuelLog>();
+        cloudFuelDocs.forEach(cd => mergedMap.set(cd.id, cd));
+        prev.forEach(ld => { if (!mergedMap.has(ld.id)) mergedMap.set(ld.id, ld); });
+        const merged = Array.from(mergedMap.values());
+        merged.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        return merged;
+      });
+      
+      setMaintenanceLogs((prev) => {
+        const mergedMap = new Map<string, MaintenanceLog>();
+        cloudMaintDocs.forEach(cd => mergedMap.set(cd.id, cd));
+        prev.forEach(ld => { if (!mergedMap.has(ld.id)) mergedMap.set(ld.id, ld); });
+        const merged = Array.from(mergedMap.values());
+        merged.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        return merged;
+      });
+      
+      // Also fetch settings
+      const settingsSnap = await getDocFromServer(doc(db, 'userSettings', targetUid));
+      if (settingsSnap.exists()) {
+        const data = settingsSnap.data();
+        if (data.customServiceTarget !== undefined) setCustomServiceTarget(data.customServiceTarget);
+        if (data.customCurrentOdometer !== undefined) setCustomCurrentOdometer(data.customCurrentOdometer);
+      }
+
       const latency = Date.now() - startTime;
 
       let fuelCount = 0;
-      // 1. Upload all fuel logs to fuelLogs + backups
-      for (const log of fuelLogs) {
+      // 2. Upload all local logs to ensure cloud is up to date
+      // Wait for state to settle? We'll just use the merged data.
+      // Actually, since setState is async, we can just use the merged arrays directly.
+      
+      const mergedFuel = (() => {
+        const map = new Map<string, FuelLog>();
+        cloudFuelDocs.forEach(cd => map.set(cd.id, cd));
+        fuelLogs.forEach(ld => { if (!map.has(ld.id)) map.set(ld.id, ld); });
+        return Array.from(map.values());
+      })();
+      
+      for (const log of mergedFuel) {
         const payload = sanitizeForFirestore({
           ...log,
           userId: targetUid,
@@ -525,8 +587,14 @@ export default function App() {
       }
 
       let maintCount = 0;
-      // 2. Upload all maintenance logs to maintenanceLogs + backups
-      for (const log of maintenanceLogs) {
+      const mergedMaint = (() => {
+        const map = new Map<string, MaintenanceLog>();
+        cloudMaintDocs.forEach(cd => map.set(cd.id, cd));
+        maintenanceLogs.forEach(ld => { if (!map.has(ld.id)) map.set(ld.id, ld); });
+        return Array.from(map.values());
+      })();
+      
+      for (const log of mergedMaint) {
         const payload = sanitizeForFirestore({
           ...log,
           userId: targetUid,
@@ -550,8 +618,8 @@ export default function App() {
       setSyncStatus('synced');
       showToast(
         lang === 'bn'
-          ? `ক্লাউড ব্যাকআপ সফল! ${fuelCount}টি ফুয়েল ও ${maintCount}টি সার্ভিস লগ সেভ হয়েছে (${latency}ms)`
-          : `Cloud backup complete! ${fuelCount} fuel & ${maintCount} service logs backed up (${latency}ms)`
+          ? `ক্লাউড রিস্টোর ও সিঙ্ক সফল! ${fuelCount}টি ফুয়েল ও ${maintCount}টি সার্ভিস লগ পাওয়া গেছে (${latency}ms)`
+          : `Cloud restored & synced! ${fuelCount} fuel & ${maintCount} service logs (${latency}ms)`
       );
     } catch (err) {
       console.error('Manual sync error:', err);
