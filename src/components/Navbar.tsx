@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Fuel, Sun, Moon, MoreVertical, Calculator, User as UserIcon, LogOut, Download, Globe } from 'lucide-react';
+import { Fuel, Sun, Moon, MoreVertical, Calculator, User as UserIcon, LogOut, Download, Globe, Cloud, RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
 import { User } from '../types';
 import { Language, translations } from '../lib/translations';
 
@@ -14,6 +14,8 @@ interface NavbarProps {
   canInstall?: boolean;
   lang: Language;
   onToggleLanguage: () => void;
+  syncStatus?: 'synced' | 'syncing' | 'offline' | 'error';
+  onManualSync?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -26,7 +28,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   onInstallApp,
   canInstall,
   lang,
-  onToggleLanguage
+  onToggleLanguage,
+  syncStatus = 'synced',
+  onManualSync
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -65,6 +69,30 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Right Section Actions & 3-Dot Overflow Menu */}
         <div className="flex items-center gap-2">
           
+          {/* Cloud Sync Status Indicator Badge */}
+          <button
+            onClick={onManualSync}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition border ${
+              syncStatus === 'syncing'
+                ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400'
+                : syncStatus === 'error' || syncStatus === 'offline'
+                ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400'
+                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+            }`}
+            title={lang === 'bn' ? 'ফায়ারবেস ক্লাউড ডেটা সিঙ্ক করতে ট্যাপ করুন' : 'Click to force sync with Firebase Cloud'}
+          >
+            {syncStatus === 'syncing' ? (
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            ) : syncStatus === 'error' || syncStatus === 'offline' ? (
+              <AlertCircle className="w-3.5 h-3.5" />
+            ) : (
+              <CheckCircle2 className="w-3.5 h-3.5" />
+            )}
+            <span className="hidden xs:inline">
+              {syncStatus === 'syncing' ? t.syncing : syncStatus === 'error' || syncStatus === 'offline' ? t.cloudError : t.cloudSynced}
+            </span>
+          </button>
+
           {/* Quick User Badge */}
           {user ? (
             <button
@@ -105,6 +133,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                     {user ? (user.isGuest ? (lang === 'bn' ? 'গেস্ট সেশন' : 'Guest Session') : user.email) : (lang === 'bn' ? 'লগইন করা নেই' : 'Not Logged In')}
                   </p>
                 </div>
+
+                {/* Force Cloud Sync Button in Menu */}
+                {onManualSync && (
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      onManualSync();
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition mb-1"
+                  >
+                    <RefreshCw className="w-4 h-4 text-emerald-500" />
+                    <span>{t.forceSync}</span>
+                  </button>
+                )}
 
                 <button
                   onClick={() => {

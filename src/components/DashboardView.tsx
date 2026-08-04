@@ -28,6 +28,10 @@ interface DashboardViewProps {
   onOpenAddFuel: () => void;
   onOpenAddMaintenance: () => void;
   lang: Language;
+  customServiceTarget?: number | null;
+  customCurrentOdometer?: number | null;
+  onSaveCustomTarget?: (target: number | null) => void;
+  onSaveCustomOdometer?: (odometer: number | null) => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -36,7 +40,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onChangeTab,
   onOpenAddFuel,
   onOpenAddMaintenance,
-  lang
+  lang,
+  customServiceTarget = null,
+  customCurrentOdometer = null,
+  onSaveCustomTarget,
+  onSaveCustomOdometer
 }) => {
   const t = translations[lang];
 
@@ -53,15 +61,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const lastFillLiters = lastFuelLog ? `${lastFuelLog.liters.toFixed(1)} L` : '0 L';
 
   // 3. Metric Tile: Next Service Mileage target & Current Odometer
-  const [customServiceTarget, setCustomServiceTarget] = useState<number | null>(() => {
-    const saved = localStorage.getItem('fuelflow_next_service_target');
-    return saved ? parseInt(saved, 10) : null;
-  });
-  const [customCurrentOdometer, setCustomCurrentOdometer] = useState<number | null>(() => {
-    const saved = localStorage.getItem('fuelflow_current_odometer');
-    return saved ? parseInt(saved, 10) : null;
-  });
-
   const [showEditServiceModal, setShowEditServiceModal] = useState<boolean>(false);
   const [showEditOdometerModal, setShowEditOdometerModal] = useState<boolean>(false);
   const [inputTargetKm, setInputTargetKm] = useState<string>('');
@@ -77,24 +76,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const nextServiceTargetKm = customServiceTarget !== null ? customServiceTarget : autoCalculatedTargetKm;
   const kmUntilService = Math.max(0, nextServiceTargetKm - currentOdometer);
 
-  const handleSaveCustomTarget = (target: number | null) => {
-    if (target === null) {
-      localStorage.removeItem('fuelflow_next_service_target');
-      setCustomServiceTarget(null);
-    } else {
-      localStorage.setItem('fuelflow_next_service_target', target.toString());
-      setCustomServiceTarget(target);
+  const handleSaveTarget = (target: number | null) => {
+    if (onSaveCustomTarget) {
+      onSaveCustomTarget(target);
     }
     setShowEditServiceModal(false);
   };
 
-  const handleSaveCustomOdometer = (odometer: number | null) => {
-    if (odometer === null) {
-      localStorage.removeItem('fuelflow_current_odometer');
-      setCustomCurrentOdometer(null);
-    } else {
-      localStorage.setItem('fuelflow_current_odometer', odometer.toString());
-      setCustomCurrentOdometer(odometer);
+  const handleSaveOdometer = (odometer: number | null) => {
+    if (onSaveCustomOdometer) {
+      onSaveCustomOdometer(odometer);
     }
     setShowEditOdometerModal(false);
   };

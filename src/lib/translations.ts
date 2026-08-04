@@ -119,7 +119,14 @@ export const translations = {
     // Units
     km: 'KM',
     kmPerLiter: 'km/L',
-    bdtSymbol: '৳'
+    bdtSymbol: '৳',
+
+    // Cloud Sync
+    cloudSynced: 'Cloud Synced',
+    syncing: 'Syncing Cloud...',
+    cloudError: 'Sync Offline',
+    forceSync: 'Force Cloud Sync',
+    syncSuccess: 'All logs and settings successfully synced online to Firebase Cloud!'
   },
 
   bn: {
@@ -240,6 +247,13 @@ export const translations = {
     // Units
     km: 'কিমি',
     kmPerLiter: 'কিমি/লিটার',
-    bdtSymbol: '৳'
+    bdtSymbol: '৳',
+
+    // Cloud Sync
+    cloudSynced: 'ক্লাউডে সিঙ্কড',
+    syncing: 'অনলাইনে সিঙ্ক হচ্ছে...',
+    cloudError: 'সিঙ্ক অফলাইন',
+    forceSync: 'ম্যানুয়াল ক্লাউড সিঙ্ক',
+    syncSuccess: 'সমস্ত লগ ও সেটিংস ফায়ারবেস ক্লাউডে অনলাইনে সেভ হয়েছে!'
   }
 };
