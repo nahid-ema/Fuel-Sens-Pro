@@ -188,6 +188,10 @@ export default function App() {
     return saved ? parseInt(saved, 10) : null;
   });
 
+  // Track initial cloud seed per user UID
+  const seededFuelUidRef = useRef<Set<string>>(new Set());
+  const seededMaintUidRef = useRef<Set<string>>(new Set());
+
   // Real-time Firestore Sync for Fuel Logs, Maintenance Logs & Settings
   useEffect(() => {
     const targetUid = user?.uid || 'guest_driver';
@@ -207,30 +211,26 @@ export default function App() {
           (d) => ({ id: d.id, ...d.data() } as FuelLog)
         );
 
-        setFuelLogs((prevLocal) => {
-          const mergedMap = new Map<string, FuelLog>();
-          
-          // 1. Add cloud documents
-          cloudDocs.forEach((cd) => mergedMap.set(cd.id, cd));
-
-          // 2. Keep local documents not yet in cloud & back them up to Firestore
-          prevLocal.forEach((localDoc) => {
-            if (!mergedMap.has(localDoc.id)) {
-              mergedMap.set(localDoc.id, localDoc);
+        if (snapshot.empty && !seededFuelUidRef.current.has(targetUid)) {
+          seededFuelUidRef.current.add(targetUid);
+          const initialLogs = fuelLogsRef.current;
+          if (initialLogs.length > 0) {
+            initialLogs.forEach((localDoc) => {
               const payload = sanitizeForFirestore({
                 ...localDoc,
                 userId: targetUid,
                 updatedAt: serverTimestamp()
               });
               setDoc(doc(db, 'fuelLogs', localDoc.id), payload).catch(() => {});
-              setDoc(doc(db, 'backups', `fuel_${localDoc.id}`), payload).catch(() => {});
-            }
-          });
-
-          const mergedList = Array.from(mergedMap.values());
-          mergedList.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-          return mergedList;
-        });
+            });
+          }
+        } else {
+          seededFuelUidRef.current.add(targetUid);
+          const sorted = [...cloudDocs].sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+          );
+          setFuelLogs(sorted);
+        }
       },
       (err) => {
         console.warn('Fuel snapshot note:', err);
@@ -252,30 +252,26 @@ export default function App() {
           (d) => ({ id: d.id, ...d.data() } as MaintenanceLog)
         );
 
-        setMaintenanceLogs((prevLocal) => {
-          const mergedMap = new Map<string, MaintenanceLog>();
-
-          // 1. Add cloud documents
-          cloudDocs.forEach((cd) => mergedMap.set(cd.id, cd));
-
-          // 2. Keep local documents not yet in cloud & back them up
-          prevLocal.forEach((localDoc) => {
-            if (!mergedMap.has(localDoc.id)) {
-              mergedMap.set(localDoc.id, localDoc);
+        if (snapshot.empty && !seededMaintUidRef.current.has(targetUid)) {
+          seededMaintUidRef.current.add(targetUid);
+          const initialLogs = maintenanceLogsRef.current;
+          if (initialLogs.length > 0) {
+            initialLogs.forEach((localDoc) => {
               const payload = sanitizeForFirestore({
                 ...localDoc,
                 userId: targetUid,
                 updatedAt: serverTimestamp()
               });
               setDoc(doc(db, 'maintenanceLogs', localDoc.id), payload).catch(() => {});
-              setDoc(doc(db, 'backups', `maint_${localDoc.id}`), payload).catch(() => {});
-            }
-          });
-
-          const mergedList = Array.from(mergedMap.values());
-          mergedList.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-          return mergedList;
-        });
+            });
+          }
+        } else {
+          seededMaintUidRef.current.add(targetUid);
+          const sorted = [...cloudDocs].sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+          );
+          setMaintenanceLogs(sorted);
+        }
       },
       (err) => {
         console.warn('Maint snapshot note:', err);
