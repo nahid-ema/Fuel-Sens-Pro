@@ -99,7 +99,7 @@ export const FuelView: React.FC<FuelViewProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#FF5200]/10 text-[#FF5200] border border-[#FF5200]/20 text-[10px] font-extrabold">
                     <Flame className="w-3 h-3 fill-[#FF5200]" />
-                    {log.fuelGrade || '91 Grade'}
+                    {log.fuelGrade || 'Fuel Log'}
                   </span>
 
                   {deletingId === log.id ? (

@@ -53,7 +53,7 @@ export const AddFuelModal: React.FC<AddFuelModalProps> = ({
       totalCost: numericTotalCost,
       liters: litersFilled,
       efficiency: calculatedMileage,
-      fuelGrade: '91 Grade',
+      fuelGrade: 'Fuel Log',
       odometerKm: parseFloat(odometerKm) || undefined,
       notes: notes.trim() || undefined
     });
@@ -83,15 +83,6 @@ export const AddFuelModal: React.FC<AddFuelModalProps> = ({
           >
             <X className="w-5 h-5" />
           </button>
-        </div>
-
-        {/* Locked Fuel Standard Banner */}
-        <div className="mb-5 p-3 rounded-2xl bg-[#FF5200]/10 border border-[#FF5200]/20 flex items-center justify-between text-xs font-bold text-[#FF5200]">
-          <div className="flex items-center gap-2">
-            <Flame className="w-4 h-4 fill-[#FF5200]" />
-            <span>Fuel Standard: 91 Octane Grade</span>
-          </div>
-          <span className="text-[10px] bg-[#FF5200] text-white px-2 py-0.5 rounded-full uppercase">Fixed</span>
         </div>
 
         {error && (

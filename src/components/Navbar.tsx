@@ -163,6 +163,20 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                 <div className="my-1 border-t border-slate-100 dark:border-zinc-800/60" />
 
+                {/* Login Method & Account Option */}
+                <button
+                  onClick={() => {
+                    setShowMenu(false);
+                    onOpenAuthModal();
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-800 dark:text-zinc-100 hover:bg-[#FF5200]/10 hover:text-[#FF5200] transition"
+                >
+                  <div className="flex items-center gap-3">
+                    <UserIcon className="w-4 h-4 text-[#FF5200]" />
+                    <span>{lang === 'bn' ? 'লগইন মেথড (গুগল, ইমেইল, গেস্ট)' : 'Login Methods (Google, Email, Guest)'}</span>
+                  </div>
+                </button>
+
                 {user ? (
                   <button
                     onClick={() => {
@@ -174,18 +188,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <LogOut className="w-4 h-4" />
                     <span>{user.isGuest ? (lang === 'bn' ? 'গেস্ট মোড থেকে বের হন' : 'Exit Guest Mode') : (lang === 'bn' ? 'সাইন আউট' : 'Sign Out')}</span>
                   </button>
-                ) : (
-                  <button
-                    onClick={() => {
-                      setShowMenu(false);
-                      onOpenAuthModal();
-                    }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-[#FF5200] hover:bg-[#FF5200]/10 transition"
-                  >
-                    <UserIcon className="w-4 h-4" />
-                    <span>{lang === 'bn' ? 'লগইন বা রেজিস্টার' : 'Login or Register'}</span>
-                  </button>
-                )}
+                ) : null}
               </div>
             )}
           </div>

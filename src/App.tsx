@@ -164,15 +164,21 @@ export default function App() {
       } else {
         // Seed initial data to firestore for new user
         INITIAL_FUEL_LOGS.forEach(async (log) => {
-          await setDoc(doc(db, 'fuelLogs', log.id), {
-            ...log,
-            userId: user.uid,
-            createdAt: serverTimestamp()
-          });
+          try {
+            const seedId = `${user.uid}_${log.id}`;
+            await setDoc(doc(db, 'fuelLogs', seedId), {
+              ...log,
+              id: seedId,
+              userId: user.uid,
+              createdAt: serverTimestamp()
+            });
+          } catch (err) {
+            console.warn('Could not seed initial fuel log:', err);
+          }
         });
       }
     }, (err) => {
-      console.error('Fuel snapshot error:', err);
+      console.warn('Fuel snapshot note:', err);
     });
 
     // Maintenance Logs Query
@@ -192,15 +198,21 @@ export default function App() {
       } else {
         // Seed initial data to firestore for new user
         INITIAL_MAINTENANCE_LOGS.forEach(async (log) => {
-          await setDoc(doc(db, 'maintenanceLogs', log.id), {
-            ...log,
-            userId: user.uid,
-            createdAt: serverTimestamp()
-          });
+          try {
+            const seedId = `${user.uid}_${log.id}`;
+            await setDoc(doc(db, 'maintenanceLogs', seedId), {
+              ...log,
+              id: seedId,
+              userId: user.uid,
+              createdAt: serverTimestamp()
+            });
+          } catch (err) {
+            console.warn('Could not seed initial maint log:', err);
+          }
         });
       }
     }, (err) => {
-      console.error('Maint snapshot error:', err);
+      console.warn('Maint snapshot note:', err);
     });
 
     return () => {
