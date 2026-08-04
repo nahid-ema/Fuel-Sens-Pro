@@ -121,7 +121,8 @@ export default function App() {
     const saved = localStorage.getItem('fuelflow_fuel_logs');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        return parsed.filter((log: FuelLog) => !['fuel-1', 'fuel-2', 'fuel-3', 'fuel-4'].includes(log.id) && !log.id.includes('_fuel-'));
       } catch {
         // Fallback
       }
@@ -134,7 +135,8 @@ export default function App() {
     const saved = localStorage.getItem('fuelflow_maintenance_logs');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        return parsed.filter((log: MaintenanceLog) => !['maint-1', 'maint-2', 'maint-3'].includes(log.id) && !log.id.includes('_maint-'));
       } catch {
         // Fallback
       }
@@ -153,30 +155,11 @@ export default function App() {
     );
 
     const unsubFuel = onSnapshot(fuelQuery, (snapshot) => {
-      if (!snapshot.empty) {
-        const docs: FuelLog[] = snapshot.docs.map((d) => ({
-          id: d.id,
-          ...d.data()
-        })) as FuelLog[];
-        // Sort by date descending
-        docs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        setFuelLogs(docs);
-      } else {
-        // Seed initial data to firestore for new user
-        INITIAL_FUEL_LOGS.forEach(async (log) => {
-          try {
-            const seedId = `${user.uid}_${log.id}`;
-            await setDoc(doc(db, 'fuelLogs', seedId), {
-              ...log,
-              id: seedId,
-              userId: user.uid,
-              createdAt: serverTimestamp()
-            });
-          } catch (err) {
-            console.warn('Could not seed initial fuel log:', err);
-          }
-        });
-      }
+      const docs: FuelLog[] = snapshot.docs
+        .map((d) => ({ id: d.id, ...d.data() } as FuelLog))
+        .filter((log) => !['fuel-1', 'fuel-2', 'fuel-3', 'fuel-4'].includes(log.id) && !log.id.includes('_fuel-'));
+      docs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setFuelLogs(docs);
     }, (err) => {
       console.warn('Fuel snapshot note:', err);
     });
@@ -188,29 +171,11 @@ export default function App() {
     );
 
     const unsubMaint = onSnapshot(maintQuery, (snapshot) => {
-      if (!snapshot.empty) {
-        const docs: MaintenanceLog[] = snapshot.docs.map((d) => ({
-          id: d.id,
-          ...d.data()
-        })) as MaintenanceLog[];
-        docs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        setMaintenanceLogs(docs);
-      } else {
-        // Seed initial data to firestore for new user
-        INITIAL_MAINTENANCE_LOGS.forEach(async (log) => {
-          try {
-            const seedId = `${user.uid}_${log.id}`;
-            await setDoc(doc(db, 'maintenanceLogs', seedId), {
-              ...log,
-              id: seedId,
-              userId: user.uid,
-              createdAt: serverTimestamp()
-            });
-          } catch (err) {
-            console.warn('Could not seed initial maint log:', err);
-          }
-        });
-      }
+      const docs: MaintenanceLog[] = snapshot.docs
+        .map((d) => ({ id: d.id, ...d.data() } as MaintenanceLog))
+        .filter((log) => !['maint-1', 'maint-2', 'maint-3'].includes(log.id) && !log.id.includes('_maint-'));
+      docs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setMaintenanceLogs(docs);
     }, (err) => {
       console.warn('Maint snapshot note:', err);
     });

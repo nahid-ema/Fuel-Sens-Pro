@@ -52,19 +52,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const lastFuelLog = fuelLogs.length > 0 ? fuelLogs[0] : null;
   const lastFillLiters = lastFuelLog ? `${lastFuelLog.liters.toFixed(1)} L` : '0 L';
 
-  // 3. Metric Tile: Next Service Mileage target (in KM)
+  // 3. Metric Tile: Next Service Mileage target & Current Odometer
   const [customServiceTarget, setCustomServiceTarget] = useState<number | null>(() => {
     const saved = localStorage.getItem('fuelflow_next_service_target');
     return saved ? parseInt(saved, 10) : null;
   });
+  const [customCurrentOdometer, setCustomCurrentOdometer] = useState<number | null>(() => {
+    const saved = localStorage.getItem('fuelflow_current_odometer');
+    return saved ? parseInt(saved, 10) : null;
+  });
+
   const [showEditServiceModal, setShowEditServiceModal] = useState<boolean>(false);
+  const [showEditOdometerModal, setShowEditOdometerModal] = useState<boolean>(false);
   const [inputTargetKm, setInputTargetKm] = useState<string>('');
+  const [inputOdometerKm, setInputOdometerKm] = useState<string>('');
 
   const highestOdometerFromFuel = fuelLogs.reduce((max, log) => Math.max(max, log.odometerKm || 0), 0);
   const highestOdometerFromMaint = maintenanceLogs.reduce((max, log) => Math.max(max, log.odometerKm || 0), 0);
-  const currentOdometer = Math.max(highestOdometerFromFuel, highestOdometerFromMaint, 42500);
+  const autoOdometer = Math.max(highestOdometerFromFuel, highestOdometerFromMaint, 0);
+  const currentOdometer = customCurrentOdometer !== null ? customCurrentOdometer : autoOdometer;
 
-  const lastMaintenanceOdometer = maintenanceLogs.length > 0 ? maintenanceLogs[0].odometerKm : 42200;
+  const lastMaintenanceOdometer = maintenanceLogs.length > 0 ? maintenanceLogs[0].odometerKm : currentOdometer;
   const autoCalculatedTargetKm = lastMaintenanceOdometer + 5000;
   const nextServiceTargetKm = customServiceTarget !== null ? customServiceTarget : autoCalculatedTargetKm;
   const kmUntilService = Math.max(0, nextServiceTargetKm - currentOdometer);
@@ -78,6 +86,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       setCustomServiceTarget(target);
     }
     setShowEditServiceModal(false);
+  };
+
+  const handleSaveCustomOdometer = (odometer: number | null) => {
+    if (odometer === null) {
+      localStorage.removeItem('fuelflow_current_odometer');
+      setCustomCurrentOdometer(null);
+    } else {
+      localStorage.setItem('fuelflow_current_odometer', odometer.toString());
+      setCustomCurrentOdometer(odometer);
+    }
+    setShowEditOdometerModal(false);
   };
 
   // 4. Recent 3 Maintenance Logs
@@ -216,9 +235,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Service Progress */}
           <div className="mt-4 space-y-1.5">
-            <div className="flex justify-between text-[11px] font-semibold text-slate-600 dark:text-zinc-400">
-              <span>{lang === 'bn' ? 'বর্তমান ওডোমিটার' : 'Current Odometer'}: {currentOdometer.toLocaleString()} {t.km}</span>
-              <span className="text-emerald-600 dark:text-emerald-400">
+            <div className="flex justify-between items-center text-[11px] font-semibold text-slate-600 dark:text-zinc-400">
+              <div className="flex items-center gap-1.5">
+                <span>{lang === 'bn' ? 'বর্তমান ওডোমিটার' : 'Current Odometer'}: <strong className="text-slate-900 dark:text-white font-extrabold">{currentOdometer.toLocaleString()} {t.km}</strong></span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInputOdometerKm(currentOdometer.toString());
+                    setShowEditOdometerModal(true);
+                  }}
+                  className="px-2 py-0.5 rounded-md bg-slate-200/80 dark:bg-zinc-800 hover:bg-[#FF5200] hover:text-white text-[10px] font-bold transition flex items-center gap-1"
+                  title="Change Current Odometer"
+                >
+                  <Edit3 className="w-2.5 h-2.5" />
+                  <span>{lang === 'bn' ? 'এডিট' : 'Edit'}</span>
+                </button>
+              </div>
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold">
                 {lang === 'bn' ? `${kmUntilService.toLocaleString()} কিমি পরে` : `In ${kmUntilService.toLocaleString()} KM`}
               </span>
             </div>
@@ -350,11 +383,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2.5">
               <Info className="w-4 h-4 shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold">{lang === 'bn' ? 'কেন ৪৭,২০০ কিমি দেখাচ্ছিল?' : 'Why was 47,200 KM showing?'}</p>
+                <p className="font-bold">{lang === 'bn' ? 'সার্ভিস টার্গেট কিভাবে হিসাব হয়?' : 'How Service Target is Calculated'}</p>
                 <p className="text-[11px] opacity-90 mt-0.5 leading-relaxed">
                   {lang === 'bn'
-                    ? 'সর্বশেষ সার্ভিস হয়েছিল ৪২,২০০ কিমি-তে। স্ট্যান্ডার্ড ৫,০০০ কিমি পর সার্ভিসিং ধরলে ৪২,২০০ + ৫,০০০ = ৪৭,২০০ কিমি টার্গেট হয়। আপনি চাইলে নিজের মতো টার্গেট কিমি সেট করতে পারেন।'
-                    : 'Your last recorded service was logged at 42,200 KM. Fuel Flow automatically added the standard 5,000 KM interval (42,200 + 5,000 = 47,200 KM). You can adjust this to your preferred target KM.'}
+                    ? 'অ্যাপটি সর্বশেষ সার্ভিসিং এর সাথে স্ট্যান্ডার্ড ৫,০০০ কিমি যোগ করে পরবর্তী টার্গেট দেয়। আপনি আপনার প্রয়োজন অনুযায়ী নতুন টার্গেট কিমি সেট করতে পারেন।'
+                    : 'Fuel Flow automatically adds 5,000 KM to your last recorded maintenance odometer. You can adjust this target anytime based on your bike manufacturer\'s schedule.'}
                 </p>
               </div>
             </div>
@@ -416,6 +449,90 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               >
                 <Check className="w-4 h-4" />
                 <span>{lang === 'bn' ? 'টার্গেট সেভ করুন' : 'Save Target'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Edit Current Odometer */}
+      {showEditOdometerModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-zinc-950 rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-200 dark:border-zinc-800 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-[#FF5200]/10 text-[#FF5200] flex items-center justify-center shrink-0">
+                  <Gauge className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                    {lang === 'bn' ? 'বর্তমান ওডোমিটার ফিক্স করুন' : 'Update Current Odometer'}
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-zinc-400">
+                    {lang === 'bn' ? 'আপনার বাইকের আসল ওডোমিটার রিডিং বসান' : 'Set your bike\'s actual current odometer reading'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowEditOdometerModal(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-900 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Info Notice */}
+            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2.5">
+              <Info className="w-4 h-4 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold">{lang === 'bn' ? 'বর্তমান ওডোমিটার কেন পরিবর্তন করবেন?' : 'Setting Bike Odometer'}</p>
+                <p className="text-[11px] opacity-90 mt-0.5 leading-relaxed">
+                  {lang === 'bn'
+                    ? 'আপনার বাইকের ড্যাশবোর্ডের আসল ওডোমিটার কিমি বসান। এর সাথে মিলিয়ে অ্যাপ পরবর্তী সার্ভিস রিমাইন্ডার হিসাব করবে।'
+                    : 'Enter the exact odometer reading from your bike\'s display. Fuel Flow will use this to accurately estimate remaining KM until your next service.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Input */}
+            <div>
+              <label className="block text-[11px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider mb-1">
+                {lang === 'bn' ? 'আপনার বাইকের বর্তমান ওডোমিটার (KM)' : 'Bike Current Odometer (KM)'}
+              </label>
+              <input
+                type="number"
+                step="1"
+                value={inputOdometerKm}
+                onChange={(e) => setInputOdometerKm(e.target.value)}
+                placeholder="e.g. 15000"
+                className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-base font-extrabold text-slate-900 dark:text-white focus:outline-none focus:border-[#FF5200]"
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="pt-2 flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={() => handleSaveCustomOdometer(null)}
+                className="px-3 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white text-xs font-bold flex items-center gap-1.5 transition"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>{lang === 'bn' ? 'স্যাম্পল ডেটায় রিসেট' : 'Reset Auto'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const val = parseInt(inputOdometerKm, 10);
+                  if (!isNaN(val) && val >= 0) {
+                    handleSaveCustomOdometer(val);
+                  }
+                }}
+                className="px-5 py-2.5 rounded-2xl bg-[#FF5200] hover:bg-[#E04800] text-white text-xs font-extrabold shadow-lg shadow-[#FF5200]/30 transition flex items-center gap-1.5"
+              >
+                <Check className="w-4 h-4" />
+                <span>{lang === 'bn' ? 'ওডোমিটার সেভ করুন' : 'Save Odometer'}</span>
               </button>
             </div>
           </div>

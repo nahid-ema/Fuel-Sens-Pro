@@ -18,8 +18,8 @@ export const TripCalculatorModal: React.FC<TripCalculatorModalProps> = ({
 }) => {
   const t = translations[lang];
   const [fuelPricePerLiter, setFuelPricePerLiter] = useState<string>('145');
-  const [distanceKm, setDistanceKm] = useState<string>('250');
-  const [totalFuelPrice, setTotalFuelPrice] = useState<string>('3625');
+  const [distanceKm, setDistanceKm] = useState<string>('');
+  const [totalFuelPrice, setTotalFuelPrice] = useState<string>('');
   const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
 
   if (!isOpen) return null;

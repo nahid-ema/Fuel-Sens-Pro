@@ -15,14 +15,14 @@ export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
   isOpen,
   onClose,
   onAddLog,
-  latestOdometer = 42500,
+  latestOdometer = 0,
   lang = 'en'
 }) => {
   const t = translations[lang];
   const [serviceTitle, setServiceTitle] = useState('');
   const [category, setCategory] = useState<MaintenanceLog['category']>('Master Service');
   const [totalCost, setTotalCost] = useState('');
-  const [odometerKm, setOdometerKm] = useState(latestOdometer.toString());
+  const [odometerKm, setOdometerKm] = useState(latestOdometer > 0 ? latestOdometer.toString() : '');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
