@@ -68,49 +68,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right Section Actions & 3-Dot Overflow Menu */}
         <div className="flex items-center gap-2">
-          
-          {/* Cloud Sync Status Indicator Badge */}
-          <button
-            onClick={onManualSync}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition border ${
-              syncStatus === 'syncing'
-                ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400'
-                : syncStatus === 'error' || syncStatus === 'offline'
-                ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400'
-                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
-            }`}
-            title={lang === 'bn' ? 'ফায়ারবেস ক্লাউড ডেটা সিঙ্ক করতে ট্যাপ করুন' : 'Click to force sync with Firebase Cloud'}
-          >
-            {syncStatus === 'syncing' ? (
-              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-            ) : syncStatus === 'error' || syncStatus === 'offline' ? (
-              <AlertCircle className="w-3.5 h-3.5" />
-            ) : (
-              <CheckCircle2 className="w-3.5 h-3.5" />
-            )}
-            <span className="hidden xs:inline">
-              {syncStatus === 'syncing' ? t.syncing : syncStatus === 'error' || syncStatus === 'offline' ? t.cloudError : t.cloudSynced}
-            </span>
-          </button>
-
-          {/* Quick User Badge */}
-          {user ? (
-            <button
-              onClick={onOpenAuthModal}
-              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-zinc-800/80 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-semibold text-slate-700 dark:text-zinc-200 transition"
-              title="Click to switch user or edit profile"
-            >
-              <UserIcon className="w-3.5 h-3.5 text-[#FF5200]" />
-              <span className="max-w-[120px] truncate">{user.name || user.email}</span>
-            </button>
-          ) : (
-            <button
-              onClick={onOpenAuthModal}
-              className="px-3.5 py-1.5 rounded-full bg-[#FF5200] text-white text-xs font-semibold shadow-md hover:bg-[#E04800] transition"
-            >
-              {lang === 'bn' ? 'সাইন ইন' : 'Sign In'}
-            </button>
-          )}
 
           {/* 3-Dot Overflow Menu */}
           <div className="relative" ref={menuRef}>
