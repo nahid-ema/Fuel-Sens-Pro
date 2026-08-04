@@ -501,121 +501,57 @@ export default function App() {
     setSyncStatus('syncing');
     const targetUid = user?.uid || 'guest_driver';
     try {
-      const startTime = Date.now();
-      
-      // Test Ping
-      await setDoc(doc(db, 'testSync', 'ping'), {
-        timestamp: serverTimestamp(),
-        pingBy: targetUid
-      });
-      await getDocFromServer(doc(db, 'testSync', 'ping'));
-      
       // 1. FETCH & RESTORE FROM CLOUD FIRST
       const fuelQuery = query(collection(db, 'fuelLogs'), where('userId', '==', targetUid));
       const maintQuery = query(collection(db, 'maintenanceLogs'), where('userId', '==', targetUid));
       
-      const [fuelSnap, maintSnap] = await Promise.all([
-        getDocsFromServer(fuelQuery),
-        getDocsFromServer(maintQuery)
-      ]);
+      let fuelSnap, maintSnap;
+      try {
+        [fuelSnap, maintSnap] = await Promise.all([
+          getDocsFromServer(fuelQuery),
+          getDocsFromServer(maintQuery)
+        ]);
+      } catch {
+        [fuelSnap, maintSnap] = await Promise.all([
+          getDocs(fuelQuery),
+          getDocs(maintQuery)
+        ]);
+      }
       
       const cloudFuelDocs = fuelSnap.docs.map(d => ({ id: d.id, ...d.data() } as FuelLog));
       const cloudMaintDocs = maintSnap.docs.map(d => ({ id: d.id, ...d.data() } as MaintenanceLog));
       
-      // Merge with local logs
-      setFuelLogs((prev) => {
-        const mergedMap = new Map<string, FuelLog>();
-        cloudFuelDocs.forEach(cd => mergedMap.set(cd.id, cd));
-        prev.forEach(ld => { if (!mergedMap.has(ld.id)) mergedMap.set(ld.id, ld); });
-        const merged = Array.from(mergedMap.values());
-        merged.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        return merged;
-      });
-      
-      setMaintenanceLogs((prev) => {
-        const mergedMap = new Map<string, MaintenanceLog>();
-        cloudMaintDocs.forEach(cd => mergedMap.set(cd.id, cd));
-        prev.forEach(ld => { if (!mergedMap.has(ld.id)) mergedMap.set(ld.id, ld); });
-        const merged = Array.from(mergedMap.values());
-        merged.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        return merged;
-      });
-      
+      cloudFuelDocs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      cloudMaintDocs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+      setFuelLogs(cloudFuelDocs);
+      setMaintenanceLogs(cloudMaintDocs);
+
       // Also fetch settings
-      const settingsSnap = await getDocFromServer(doc(db, 'userSettings', targetUid));
-      if (settingsSnap.exists()) {
-        const data = settingsSnap.data();
-        if (data.customServiceTarget !== undefined) setCustomServiceTarget(data.customServiceTarget);
-        if (data.customCurrentOdometer !== undefined) setCustomCurrentOdometer(data.customCurrentOdometer);
+      try {
+        const settingsSnap = await getDocFromServer(doc(db, 'userSettings', targetUid));
+        if (settingsSnap.exists()) {
+          const data = settingsSnap.data();
+          if (data.customServiceTarget !== undefined) setCustomServiceTarget(data.customServiceTarget);
+          if (data.customCurrentOdometer !== undefined) setCustomCurrentOdometer(data.customCurrentOdometer);
+        }
+      } catch {
+        // Ignore settings fetch error if document doesn't exist
       }
-
-      const latency = Date.now() - startTime;
-
-      let fuelCount = 0;
-      // 2. Upload all local logs to ensure cloud is up to date
-      // Wait for state to settle? We'll just use the merged data.
-      // Actually, since setState is async, we can just use the merged arrays directly.
-      
-      const mergedFuel = (() => {
-        const map = new Map<string, FuelLog>();
-        cloudFuelDocs.forEach(cd => map.set(cd.id, cd));
-        fuelLogs.forEach(ld => { if (!map.has(ld.id)) map.set(ld.id, ld); });
-        return Array.from(map.values());
-      })();
-      
-      for (const log of mergedFuel) {
-        const payload = sanitizeForFirestore({
-          ...log,
-          userId: targetUid,
-          updatedAt: serverTimestamp()
-        });
-        await setDoc(doc(db, 'fuelLogs', log.id), payload);
-        await setDoc(doc(db, 'backups', `fuel_${log.id}`), payload).catch(() => {});
-        fuelCount++;
-      }
-
-      let maintCount = 0;
-      const mergedMaint = (() => {
-        const map = new Map<string, MaintenanceLog>();
-        cloudMaintDocs.forEach(cd => map.set(cd.id, cd));
-        maintenanceLogs.forEach(ld => { if (!map.has(ld.id)) map.set(ld.id, ld); });
-        return Array.from(map.values());
-      })();
-      
-      for (const log of mergedMaint) {
-        const payload = sanitizeForFirestore({
-          ...log,
-          userId: targetUid,
-          updatedAt: serverTimestamp()
-        });
-        await setDoc(doc(db, 'maintenanceLogs', log.id), payload);
-        await setDoc(doc(db, 'backups', `maint_${log.id}`), payload).catch(() => {});
-        maintCount++;
-      }
-
-      // 3. Upload user settings
-      const settingsPayload = sanitizeForFirestore({
-        userId: targetUid,
-        customServiceTarget,
-        customCurrentOdometer,
-        updatedAt: serverTimestamp()
-      });
-      await setDoc(doc(db, 'userSettings', targetUid), settingsPayload, { merge: true });
-      await setDoc(doc(db, 'backups', `settings_${targetUid}`), settingsPayload, { merge: true }).catch(() => {});
 
       setSyncStatus('synced');
       showToast(
         lang === 'bn'
-          ? `ক্লাউড রিস্টোর ও সিঙ্ক সফল! ${fuelCount}টি ফুয়েল ও ${maintCount}টি সার্ভিস লগ পাওয়া গেছে (${latency}ms)`
-          : `Cloud restored & synced! ${fuelCount} fuel & ${maintCount} service logs (${latency}ms)`
+          ? 'ক্লাউড সিঙ্ক সম্পন্ন হয়েছে'
+          : 'Cloud sync complete'
       );
     } catch (err) {
       console.error('Manual sync error:', err);
       setSyncStatus('error');
       showToast(
         lang === 'bn'
-          ? 'ক্লাউড সিঙ্কে ত্রুটি ঘটেছে, পুনরায় চেষ্টা করুন।'
-          : 'Cloud sync error occurred. Please try again.'
+          ? 'ক্লাউড সিঙ্ক করার চেষ্টা সফল হয়নি'
+          : 'Unable to sync with cloud'
       );
     }
   };
