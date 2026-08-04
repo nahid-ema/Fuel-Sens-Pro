@@ -67,10 +67,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         {/* Top Badges Row */}
         <div className="flex items-center justify-between flex-wrap gap-2 mb-6">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FF5200] text-white text-[11px] font-extrabold tracking-wide shadow-md shadow-[#FF5200]/40">
-              <Flame className="w-3.5 h-3.5 fill-white" />
-              91 Grade
-            </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               LIVE LOGS
@@ -115,10 +111,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
 
         {/* Quick Action Button inside Hero */}
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 pt-2">
-          <p className="text-xs text-zinc-400 font-medium hidden sm:block">
-            Fuel Standard: <span className="text-white font-bold">91 Octane Grade</span>
-          </p>
+        <div className="mt-6 flex flex-wrap items-center justify-end gap-3 pt-2">
           <button
             onClick={onOpenAddFuel}
             className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-[#FF5200] hover:bg-[#E04800] text-white font-bold text-xs tracking-wide shadow-lg shadow-[#FF5200]/30 transition flex items-center justify-center gap-2"
@@ -274,7 +267,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           Developer Nahid Ferdous Emon
         </p>
         <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-1">
-          Fuel Flow © 2026 • Vehicle Fuel & Service Tracker • 91 Octane Standard
+          Fuel Flow © 2026 • Vehicle Fuel & Service Tracker
         </p>
       </footer>
 

@@ -1,5 +1,6 @@
 export interface FuelLog {
   id: string;
+  userId?: string;
   date: string;
   travelKm: number;
   perLiterCost: number; // in BDT (৳)
@@ -13,18 +14,20 @@ export interface FuelLog {
 
 export interface MaintenanceLog {
   id: string;
+  userId?: string;
   serviceTitle: string;
   date: string;
   odometerKm: number;
   totalCost: number; // in BDT (৳)
   notes?: string;
-  category?: 'Engine Oil' | 'Brake Service' | 'Tires' | 'Transmission' | 'General Service' | 'Other';
+  category?: 'Master Service' | 'Engine Oil' | 'Brake Service' | 'Tires' | 'Transmission' | 'General Service' | 'Other';
 }
 
 export interface User {
   email: string;
   name?: string;
   isGuest: boolean;
+  uid?: string;
 }
 
 export type TabType = 'dashboard' | 'fuel' | 'maintenance';

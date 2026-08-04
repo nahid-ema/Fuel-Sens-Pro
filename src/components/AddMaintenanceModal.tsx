@@ -16,7 +16,7 @@ export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
   latestOdometer = 42500
 }) => {
   const [serviceTitle, setServiceTitle] = useState('');
-  const [category, setCategory] = useState<MaintenanceLog['category']>('Engine Oil');
+  const [category, setCategory] = useState<MaintenanceLog['category']>('Master Service');
   const [totalCost, setTotalCost] = useState('');
   const [odometerKm, setOdometerKm] = useState(latestOdometer.toString());
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -24,6 +24,7 @@ export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
   const [error, setError] = useState('');
 
   const categories: MaintenanceLog['category'][] = [
+    'Master Service',
     'Engine Oil',
     'Brake Service',
     'Tires',

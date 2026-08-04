@@ -47,9 +47,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white">
                 Fuel<span className="text-[#FF5200]">Flow</span>
               </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FF5200]/10 text-[#FF5200] border border-[#FF5200]/20 flex items-center gap-1">
-                <Flame className="w-3 h-3 fill-[#FF5200]" /> 91 OCTANE
-              </span>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium">Vehicle & Fuel Tracker</p>
           </div>
@@ -76,16 +73,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               Sign In
             </button>
           )}
-
-          {/* Direct Theme Toggle */}
-          <button
-            onClick={onToggleDarkMode}
-            className="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-300 transition"
-            aria-label="Toggle dark/light theme"
-            title="Toggle Light/Dark Theme"
-          >
-            {darkMode ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-slate-700" />}
-          </button>
 
           {/* 3-Dot Overflow Menu */}
           <div className="relative" ref={menuRef}>

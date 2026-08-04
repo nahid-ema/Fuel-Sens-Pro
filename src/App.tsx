@@ -10,6 +10,20 @@ import { AuthModal } from './components/AuthModal';
 import { AddFuelModal } from './components/AddFuelModal';
 import { AddMaintenanceModal } from './components/AddMaintenanceModal';
 import { TripCalculatorModal } from './components/TripCalculatorModal';
+import {
+  auth,
+  db,
+  onAuthStateChanged,
+  firebaseSignOut,
+  collection,
+  doc,
+  setDoc,
+  deleteDoc,
+  onSnapshot,
+  query,
+  where,
+  serverTimestamp
+} from './lib/firebase';
 
 export default function App() {
   // 1. Theme State (Dark vs Light)
@@ -42,7 +56,6 @@ export default function App() {
         // Fallback
       }
     }
-    // Default guest session so app works seamlessly immediately
     return {
       email: 'guest@fuelflow.app',
       name: 'Guest Driver',
@@ -50,13 +63,40 @@ export default function App() {
     };
   });
 
+  // Listen to Firebase auth state
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        const u: User = {
+          email: firebaseUser.email || 'guest@fuelflow.app',
+          name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Guest Driver',
+          isGuest: firebaseUser.isAnonymous,
+          uid: firebaseUser.uid
+        };
+        setUser(u);
+        localStorage.setItem('fuelflow_user', JSON.stringify(u));
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
   const handleAuthenticate = (newUser: User) => {
     setUser(newUser);
     localStorage.setItem('fuelflow_user', JSON.stringify(newUser));
   };
 
-  const handleSignOut = () => {
-    setUser(null);
+  const handleSignOut = async () => {
+    try {
+      await firebaseSignOut(auth);
+    } catch (err) {
+      console.error('Sign out error:', err);
+    }
+    const guestUser: User = {
+      email: 'guest@fuelflow.app',
+      name: 'Guest Driver',
+      isGuest: true
+    };
+    setUser(guestUser);
     localStorage.removeItem('fuelflow_user');
   };
 
@@ -73,10 +113,6 @@ export default function App() {
     return INITIAL_FUEL_LOGS;
   });
 
-  useEffect(() => {
-    localStorage.setItem('fuelflow_fuel_logs', JSON.stringify(fuelLogs));
-  }, [fuelLogs]);
-
   // 4. Maintenance Logs State
   const [maintenanceLogs, setMaintenanceLogs] = useState<MaintenanceLog[]>(() => {
     const saved = localStorage.getItem('fuelflow_maintenance_logs');
@@ -89,6 +125,78 @@ export default function App() {
     }
     return INITIAL_MAINTENANCE_LOGS;
   });
+
+  // Real-time Firestore Sync for Fuel Logs & Maintenance Logs
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    // Fuel Logs Query
+    const fuelQuery = query(
+      collection(db, 'fuelLogs'),
+      where('userId', '==', user.uid)
+    );
+
+    const unsubFuel = onSnapshot(fuelQuery, (snapshot) => {
+      if (!snapshot.empty) {
+        const docs: FuelLog[] = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data()
+        })) as FuelLog[];
+        // Sort by date descending
+        docs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        setFuelLogs(docs);
+      } else {
+        // Seed initial data to firestore for new user
+        INITIAL_FUEL_LOGS.forEach(async (log) => {
+          await setDoc(doc(db, 'fuelLogs', log.id), {
+            ...log,
+            userId: user.uid,
+            createdAt: serverTimestamp()
+          });
+        });
+      }
+    }, (err) => {
+      console.error('Fuel snapshot error:', err);
+    });
+
+    // Maintenance Logs Query
+    const maintQuery = query(
+      collection(db, 'maintenanceLogs'),
+      where('userId', '==', user.uid)
+    );
+
+    const unsubMaint = onSnapshot(maintQuery, (snapshot) => {
+      if (!snapshot.empty) {
+        const docs: MaintenanceLog[] = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data()
+        })) as MaintenanceLog[];
+        docs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        setMaintenanceLogs(docs);
+      } else {
+        // Seed initial data to firestore for new user
+        INITIAL_MAINTENANCE_LOGS.forEach(async (log) => {
+          await setDoc(doc(db, 'maintenanceLogs', log.id), {
+            ...log,
+            userId: user.uid,
+            createdAt: serverTimestamp()
+          });
+        });
+      }
+    }, (err) => {
+      console.error('Maint snapshot error:', err);
+    });
+
+    return () => {
+      unsubFuel();
+      unsubMaint();
+    };
+  }, [user?.uid]);
+
+  // Sync to local storage for offline support
+  useEffect(() => {
+    localStorage.setItem('fuelflow_fuel_logs', JSON.stringify(fuelLogs));
+  }, [fuelLogs]);
 
   useEffect(() => {
     localStorage.setItem('fuelflow_maintenance_logs', JSON.stringify(maintenanceLogs));
@@ -104,35 +212,106 @@ export default function App() {
   const [showTripCalculatorModal, setShowTripCalculatorModal] = useState<boolean>(false);
 
   // Handlers for Add Fuel
-  const handleAddFuelLog = (newLogData: Omit<FuelLog, 'id'>) => {
+  const handleAddFuelLog = async (newLogData: Omit<FuelLog, 'id'>) => {
+    const id = `fuel-${Date.now()}`;
     const newLog: FuelLog = {
       ...newLogData,
-      id: `fuel-${Date.now()}`
+      id,
+      userId: user?.uid
     };
+
     setFuelLogs((prev) => [newLog, ...prev]);
+
+    if (user?.uid) {
+      try {
+        await setDoc(doc(db, 'fuelLogs', id), {
+          ...newLog,
+          createdAt: serverTimestamp()
+        });
+      } catch (err) {
+        console.error('Firestore save fuel log error:', err);
+      }
+    }
   };
 
-  const handleDeleteFuelLog = (id: string) => {
+  const handleDeleteFuelLog = async (id: string) => {
     setFuelLogs((prev) => prev.filter((log) => log.id !== id));
+
+    if (user?.uid) {
+      try {
+        await deleteDoc(doc(db, 'fuelLogs', id));
+      } catch (err) {
+        console.error('Firestore delete fuel log error:', err);
+      }
+    }
   };
 
   // Handlers for Add Maintenance
-  const handleAddMaintenanceLog = (newLogData: Omit<MaintenanceLog, 'id'>) => {
+  const handleAddMaintenanceLog = async (newLogData: Omit<MaintenanceLog, 'id'>) => {
+    const id = `maint-${Date.now()}`;
     const newLog: MaintenanceLog = {
       ...newLogData,
-      id: `maint-${Date.now()}`
+      id,
+      userId: user?.uid
     };
+
     setMaintenanceLogs((prev) => [newLog, ...prev]);
+
+    if (user?.uid) {
+      try {
+        await setDoc(doc(db, 'maintenanceLogs', id), {
+          ...newLog,
+          createdAt: serverTimestamp()
+        });
+      } catch (err) {
+        console.error('Firestore save maintenance log error:', err);
+      }
+    }
   };
 
-  const handleDeleteMaintenanceLog = (id: string) => {
+  const handleDeleteMaintenanceLog = async (id: string) => {
     setMaintenanceLogs((prev) => prev.filter((log) => log.id !== id));
+
+    if (user?.uid) {
+      try {
+        await deleteDoc(doc(db, 'maintenanceLogs', id));
+      } catch (err) {
+        console.error('Firestore delete maintenance log error:', err);
+      }
+    }
   };
 
   // Calculate highest odometer for smart defaulting in modals
   const highestOdometerFromFuel = fuelLogs.reduce((max, log) => Math.max(max, log.odometerKm || 0), 0);
   const highestOdometerFromMaint = maintenanceLogs.reduce((max, log) => Math.max(max, log.odometerKm || 0), 0);
   const latestOdometer = Math.max(highestOdometerFromFuel, highestOdometerFromMaint, 42500);
+
+  // PWA Install Prompt State
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallBanner(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallPwa = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log('PWA install choice outcome:', outcome);
+    setDeferredPrompt(null);
+    setShowInstallBanner(false);
+  };
 
   return (
     <div className="min-h-screen bg-[#F2F3F5] dark:bg-[#09090B] text-slate-900 dark:text-white transition-colors">
@@ -146,6 +325,37 @@ export default function App() {
         onOpenAuthModal={() => setShowAuthModal(true)}
         onSignOut={handleSignOut}
       />
+
+      {/* PWA Chrome Install Notification Banner */}
+      {showInstallBanner && (
+        <div className="max-w-4xl mx-auto px-4 pt-3">
+          <div className="p-3.5 rounded-2xl bg-[#FF5200] text-white flex items-center justify-between gap-3 shadow-lg animate-in slide-in-from-top duration-300">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center font-black text-sm">
+                ⚡
+              </div>
+              <div>
+                <p className="text-xs font-bold">Install Fuel Flow App</p>
+                <p className="text-[10px] text-white/80">Add to home screen for fast Chrome access</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleInstallPwa}
+                className="px-3 py-1.5 rounded-full bg-white text-[#FF5200] font-bold text-xs shadow-sm hover:bg-slate-100 transition"
+              >
+                Install Now
+              </button>
+              <button
+                onClick={() => setShowInstallBanner(false)}
+                className="text-xs text-white/80 hover:text-white px-2 py-1"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Screen Content */}
       <main className="max-w-4xl mx-auto px-4 pt-6">
@@ -180,6 +390,7 @@ export default function App() {
       <BottomNav
         activeTab={activeTab}
         onChangeTab={(tab) => setActiveTab(tab)}
+        onOpenTripCalculator={() => setShowTripCalculatorModal(true)}
         fuelCount={fuelLogs.length}
         maintenanceCount={maintenanceLogs.length}
       />

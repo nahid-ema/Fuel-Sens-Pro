@@ -27,7 +27,7 @@ export const MaintenanceView: React.FC<MaintenanceViewProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const categories = ['All', 'Engine Oil', 'Brake Service', 'General Service', 'Tires', 'Other'];
+  const categories = ['All', 'Master Service', 'Engine Oil', 'Brake Service', 'General Service', 'Tires', 'Other'];
 
   const filteredLogs = logs.filter((log) => {
     const matchesCategory = selectedCategory === 'All' || log.category === selectedCategory;

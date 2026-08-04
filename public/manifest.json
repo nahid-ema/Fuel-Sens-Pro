@@ -1,0 +1,24 @@
+{
+  "short_name": "FuelFlow",
+  "name": "Fuel Flow - Vehicle & Fuel Tracker",
+  "icons": [
+    {
+      "src": "pwa-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "pwa-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#09090B",
+  "theme_color": "#FF5200",
+  "display": "standalone",
+  "orientation": "portrait",
+  "description": "Track vehicle fuel efficiency, fuel logs, and maintenance services in real-time."
+}

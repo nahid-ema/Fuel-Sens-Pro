@@ -1,0 +1,53 @@
+{
+  "entities": {
+    "fuelLogs": {
+      "title": "Fuel Log",
+      "description": "Fuel fill-up logs tracked by vehicle drivers",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "date": { "type": "string" },
+        "travelKm": { "type": "number" },
+        "perLiterCost": { "type": "number" },
+        "totalCost": { "type": "number" },
+        "liters": { "type": "number" },
+        "efficiency": { "type": "number" },
+        "fuelGrade": { "type": "string" },
+        "odometerKm": { "type": "number" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["userId", "date", "travelKm", "perLiterCost", "totalCost", "liters", "efficiency"]
+    },
+    "maintenanceLogs": {
+      "title": "Maintenance Log",
+      "description": "Vehicle service and repair logs",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "serviceTitle": { "type": "string" },
+        "date": { "type": "string" },
+        "odometerKm": { "type": "number" },
+        "totalCost": { "type": "number" },
+        "category": { "type": "string" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["userId", "serviceTitle", "date", "odometerKm", "totalCost"]
+    },
+    "users": {
+      "title": "User Profile",
+      "description": "Registered user accounts",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "name": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["uid", "email"]
+    }
+  }
+}
