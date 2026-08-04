@@ -3,11 +3,11 @@ export interface FuelLog {
   userId?: string;
   date: string;
   travelKm: number;
-  perLiterCost: number; // in BDT (৳)
+  perLiterCost: number; // in BDT (৳) - default 145 BDT/L
   totalCost: number; // in BDT (৳)
   liters: number; // totalCost / perLiterCost
   efficiency: number; // travelKm / liters (KM/L)
-  fuelGrade: string; // Default: "91 Grade"
+  fuelGrade: string; // "Fuel Log" or fuel description
   odometerKm?: number;
   notes?: string;
 }

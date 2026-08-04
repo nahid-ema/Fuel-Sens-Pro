@@ -20,8 +20,8 @@ export const AddFuelModal: React.FC<AddFuelModalProps> = ({
 }) => {
   const t = translations[lang];
   const [travelKm, setTravelKm] = useState<string>('350');
-  const [perLiterCost, setPerLiterCost] = useState<string>('130');
-  const [totalCost, setTotalCost] = useState<string>('3640');
+  const [perLiterCost, setPerLiterCost] = useState<string>('145');
+  const [totalCost, setTotalCost] = useState<string>('5075');
   const [odometerKm, setOdometerKm] = useState<string>((latestOdometer + 350).toString());
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState<string>('');
@@ -124,7 +124,7 @@ export const AddFuelModal: React.FC<AddFuelModalProps> = ({
                 <input
                   type="number"
                   step="0.1"
-                  placeholder="130"
+                  placeholder="145"
                   value={perLiterCost}
                   onChange={(e) => setPerLiterCost(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#FF5200]"
@@ -143,7 +143,7 @@ export const AddFuelModal: React.FC<AddFuelModalProps> = ({
                 <input
                   type="number"
                   step="1"
-                  placeholder="3640"
+                  placeholder="5075"
                   value={totalCost}
                   onChange={(e) => setTotalCost(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#FF5200]"

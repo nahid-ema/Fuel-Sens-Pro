@@ -362,36 +362,7 @@ export default function App() {
         onToggleLanguage={toggleLanguage}
       />
 
-      {/* PWA Chrome Install Notification Banner */}
-      {showInstallBanner && (
-        <div className="max-w-4xl mx-auto px-4 pt-3">
-          <div className="p-3.5 rounded-2xl bg-[#FF5200] text-white flex items-center justify-between gap-3 shadow-lg animate-in slide-in-from-top duration-300">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center font-black text-sm">
-                ⚡
-              </div>
-              <div>
-                <p className="text-xs font-bold">{lang === 'bn' ? 'ফ্যুয়েল ফ্লো অ্যাপ ইনস্টল করুন' : 'Install Fuel Flow App'}</p>
-                <p className="text-[10px] text-white/80">{lang === 'bn' ? 'ক্রোমে দ্রুত ব্যবহারের জন্য হোম স্ক্রিনে যোগ করুন' : 'Add to home screen for fast Chrome access'}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleInstallPwa}
-                className="px-3 py-1.5 rounded-full bg-white text-[#FF5200] font-bold text-xs shadow-sm hover:bg-slate-100 transition"
-              >
-                {lang === 'bn' ? 'এখনই ইনস্টল করুন' : 'Install Now'}
-              </button>
-              <button
-                onClick={() => setShowInstallBanner(false)}
-                className="text-xs text-white/80 hover:text-white px-2 py-1"
-              >
-                {lang === 'bn' ? 'বন্ধ করুন' : 'Dismiss'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Main Screen Content */}
       <main className="max-w-4xl mx-auto px-4 pt-6">

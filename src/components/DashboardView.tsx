@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FuelLog, MaintenanceLog, TabType } from '../types';
 import { Language, translations } from '../lib/translations';
 import {
@@ -13,7 +13,12 @@ import {
   Calendar,
   Wrench,
   DollarSign,
-  Activity
+  Activity,
+  Edit3,
+  Info,
+  RotateCcw,
+  Check,
+  X
 } from 'lucide-react';
 
 interface DashboardViewProps {
@@ -48,14 +53,32 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const lastFillLiters = lastFuelLog ? `${lastFuelLog.liters.toFixed(1)} L` : '0 L';
 
   // 3. Metric Tile: Next Service Mileage target (in KM)
-  // Calculate based on highest recorded odometer or last maintenance + 5,000 KM
+  const [customServiceTarget, setCustomServiceTarget] = useState<number | null>(() => {
+    const saved = localStorage.getItem('fuelflow_next_service_target');
+    return saved ? parseInt(saved, 10) : null;
+  });
+  const [showEditServiceModal, setShowEditServiceModal] = useState<boolean>(false);
+  const [inputTargetKm, setInputTargetKm] = useState<string>('');
+
   const highestOdometerFromFuel = fuelLogs.reduce((max, log) => Math.max(max, log.odometerKm || 0), 0);
   const highestOdometerFromMaint = maintenanceLogs.reduce((max, log) => Math.max(max, log.odometerKm || 0), 0);
   const currentOdometer = Math.max(highestOdometerFromFuel, highestOdometerFromMaint, 42500);
 
   const lastMaintenanceOdometer = maintenanceLogs.length > 0 ? maintenanceLogs[0].odometerKm : 42200;
-  const nextServiceTargetKm = lastMaintenanceOdometer + 5000;
+  const autoCalculatedTargetKm = lastMaintenanceOdometer + 5000;
+  const nextServiceTargetKm = customServiceTarget !== null ? customServiceTarget : autoCalculatedTargetKm;
   const kmUntilService = Math.max(0, nextServiceTargetKm - currentOdometer);
+
+  const handleSaveCustomTarget = (target: number | null) => {
+    if (target === null) {
+      localStorage.removeItem('fuelflow_next_service_target');
+      setCustomServiceTarget(null);
+    } else {
+      localStorage.setItem('fuelflow_next_service_target', target.toString());
+      setCustomServiceTarget(target);
+    }
+    setShowEditServiceModal(false);
+  };
 
   // 4. Recent 3 Maintenance Logs
   const recentMaintenance = maintenanceLogs.slice(0, 3);
@@ -161,15 +184,33 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <div className="m3-card p-6 relative overflow-hidden group hover:border-[#FF5200]/40 transition">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
-                {lang === 'bn' ? 'পরবর্তী সার্ভিস টার্গেট' : 'Next Service Target'}
-              </p>
+              <div className="flex items-center gap-2 mb-1">
+                <p className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
+                  {lang === 'bn' ? 'পরবর্তী সার্ভিস টার্গেট' : 'Next Service Target'}
+                </p>
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-[#FF5200]/10 text-[#FF5200] border border-[#FF5200]/20">
+                  {customServiceTarget !== null ? (lang === 'bn' ? 'কাস্টম' : 'Custom') : (lang === 'bn' ? 'অটো (+৫,০০০ কিমি)' : 'Auto (+5,000 KM)')}
+                </span>
+              </div>
               <p className="text-3xl font-extrabold text-[#FF5200]">
                 {nextServiceTargetKm.toLocaleString()} <span className="text-base font-bold text-slate-500 dark:text-zinc-400">{t.km}</span>
               </p>
             </div>
-            <div className="w-12 h-12 rounded-2xl bg-[#FF5200]/10 text-[#FF5200] flex items-center justify-center">
-              <Gauge className="w-6 h-6" />
+            <div className="flex flex-col items-end gap-2">
+              <div className="w-10 h-10 rounded-2xl bg-[#FF5200]/10 text-[#FF5200] flex items-center justify-center">
+                <Gauge className="w-5 h-5" />
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setInputTargetKm(nextServiceTargetKm.toString());
+                  setShowEditServiceModal(true);
+                }}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#FF5200] hover:bg-[#E04800] text-white text-[11px] font-bold shadow-sm transition"
+              >
+                <Edit3 className="w-3 h-3" />
+                <span>{lang === 'bn' ? 'পরিবর্তন' : 'Fix Target'}</span>
+              </button>
             </div>
           </div>
 
@@ -178,14 +219,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="flex justify-between text-[11px] font-semibold text-slate-600 dark:text-zinc-400">
               <span>{lang === 'bn' ? 'বর্তমান ওডোমিটার' : 'Current Odometer'}: {currentOdometer.toLocaleString()} {t.km}</span>
               <span className="text-emerald-600 dark:text-emerald-400">
-                {lang === 'bn' ? `${kmUntilService} কিমি পরে` : `In ${kmUntilService} KM`}
+                {lang === 'bn' ? `${kmUntilService.toLocaleString()} কিমি পরে` : `In ${kmUntilService.toLocaleString()} KM`}
               </span>
             </div>
             <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-zinc-800 overflow-hidden">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-[#FF5200] to-amber-500"
                 style={{
-                  width: `${Math.min(100, Math.max(10, ((currentOdometer - lastMaintenanceOdometer) / 5000) * 100))}%`
+                  width: `${Math.min(100, Math.max(10, ((currentOdometer - lastMaintenanceOdometer) / (nextServiceTargetKm - lastMaintenanceOdometer || 5000)) * 100))}%`
                 }}
               />
             </div>
@@ -274,9 +315,112 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {t.developerCredit}
         </p>
         <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-1">
-          Fuel Flow © 2026 • Vehicle Fuel & Service Tracker
+          Fuel Flow © 2026 • Bike Fuel & Service Tracker
         </p>
       </footer>
+
+      {/* Modal: Fix / Change Next Service Target */}
+      {showEditServiceModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-zinc-950 rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-200 dark:border-zinc-800 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-[#FF5200]/10 text-[#FF5200] flex items-center justify-center shrink-0">
+                  <Gauge className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                    {lang === 'bn' ? 'পরবর্তী সার্ভিস টার্গেট ফিক্স করুন' : 'Fix Next Service Target'}
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-zinc-400">
+                    {lang === 'bn' ? 'বাইকের পরবর্তী সার্ভিস ওডোমিটার (KM) সেট করুন' : 'Set your bike\'s target service odometer'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowEditServiceModal(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-900 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Explanation box */}
+            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2.5">
+              <Info className="w-4 h-4 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold">{lang === 'bn' ? 'কেন ৪৭,২০০ কিমি দেখাচ্ছিল?' : 'Why was 47,200 KM showing?'}</p>
+                <p className="text-[11px] opacity-90 mt-0.5 leading-relaxed">
+                  {lang === 'bn'
+                    ? 'সর্বশেষ সার্ভিস হয়েছিল ৪২,২০০ কিমি-তে। স্ট্যান্ডার্ড ৫,০০০ কিমি পর সার্ভিসিং ধরলে ৪২,২০০ + ৫,০০০ = ৪৭,২০০ কিমি টার্গেট হয়। আপনি চাইলে নিজের মতো টার্গেট কিমি সেট করতে পারেন।'
+                    : 'Your last recorded service was logged at 42,200 KM. Fuel Flow automatically added the standard 5,000 KM interval (42,200 + 5,000 = 47,200 KM). You can adjust this to your preferred target KM.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Target Input */}
+            <div>
+              <label className="block text-[11px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider mb-1">
+                {lang === 'bn' ? 'পরবর্তী সার্ভিস ওডোমিটার টার্গেট (KM)' : 'Next Service Target Odometer (KM)'}
+              </label>
+              <input
+                type="number"
+                step="100"
+                value={inputTargetKm}
+                onChange={(e) => setInputTargetKm(e.target.value)}
+                placeholder="e.g. 45000"
+                className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-base font-extrabold text-slate-900 dark:text-white focus:outline-none focus:border-[#FF5200]"
+              />
+            </div>
+
+            {/* Quick Presets */}
+            <div>
+              <p className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 mb-2">
+                {lang === 'bn' ? 'দ্রুত সিলেক্ট করুন (Quick Presets)' : 'Quick Target Presets'}
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {[45000, 48000, 50000].map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setInputTargetKm(preset.toString())}
+                    className="py-2 px-2.5 rounded-xl bg-slate-100 dark:bg-zinc-900 hover:bg-[#FF5200]/10 hover:text-[#FF5200] text-xs font-bold text-slate-700 dark:text-zinc-300 transition"
+                  >
+                    {preset.toLocaleString()} KM
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="pt-2 flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={() => handleSaveCustomTarget(null)}
+                className="px-3 py-2.5 rounded-2xl bg-slate-100 dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white text-xs font-bold flex items-center gap-1.5 transition"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>{lang === 'bn' ? 'অটো টার্গেটে রিসেট' : 'Reset Auto'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const val = parseInt(inputTargetKm, 10);
+                  if (!isNaN(val) && val > 0) {
+                    handleSaveCustomTarget(val);
+                  }
+                }}
+                className="px-5 py-2.5 rounded-2xl bg-[#FF5200] hover:bg-[#E04800] text-white text-xs font-extrabold shadow-lg shadow-[#FF5200]/30 transition flex items-center gap-1.5"
+              >
+                <Check className="w-4 h-4" />
+                <span>{lang === 'bn' ? 'টার্গেট সেভ করুন' : 'Save Target'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

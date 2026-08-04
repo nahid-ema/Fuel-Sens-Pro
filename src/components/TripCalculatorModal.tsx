@@ -17,9 +17,9 @@ export const TripCalculatorModal: React.FC<TripCalculatorModalProps> = ({
   lang = 'en'
 }) => {
   const t = translations[lang];
-  const [fuelPricePerLiter, setFuelPricePerLiter] = useState<string>('130');
+  const [fuelPricePerLiter, setFuelPricePerLiter] = useState<string>('145');
   const [distanceKm, setDistanceKm] = useState<string>('250');
-  const [totalFuelPrice, setTotalFuelPrice] = useState<string>('2600');
+  const [totalFuelPrice, setTotalFuelPrice] = useState<string>('3625');
   const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
 
   if (!isOpen) return null;
@@ -29,9 +29,8 @@ export const TripCalculatorModal: React.FC<TripCalculatorModalProps> = ({
   // Distance = D
   // Total Fuel Price = T
   // Fuel Used (Liters) = T / P
-  // Mileage (KM/L) = D / Fuel Used = D / (T / P) = (D * P) / T
+  // Mileage (KM/L) = D / Fuel Used
   // Cost per KM (৳/KM) = T / D
-
   const P = parseFloat(fuelPricePerLiter) || 0;
   const D = parseFloat(distanceKm) || 0;
   const T = parseFloat(totalFuelPrice) || 0;
@@ -50,8 +49,8 @@ export const TripCalculatorModal: React.FC<TripCalculatorModalProps> = ({
       totalCost: T,
       liters: fuelUsedLiters,
       efficiency: mileageKmL,
-      fuelGrade: '91 Grade',
-      notes: `Trip Calculator Log (${D} KM @ ৳${P}/L)`
+      fuelGrade: 'Trip Log',
+      notes: `Trip Calculator (${D} KM @ ৳${P}/L)`
     });
 
     setSavedSuccess(true);
@@ -89,15 +88,6 @@ export const TripCalculatorModal: React.FC<TripCalculatorModalProps> = ({
           </button>
         </div>
 
-        {/* 91 Octane Grade Badge */}
-        <div className="mb-5 p-3 rounded-2xl bg-[#FF5200]/10 border border-[#FF5200]/20 flex items-center justify-between text-xs font-bold text-[#FF5200]">
-          <div className="flex items-center gap-2">
-            <Flame className="w-4 h-4 fill-[#FF5200]" />
-            <span>Fuel Standard: 91 Grade (91 Octane)</span>
-          </div>
-          <span className="text-[10px] bg-[#FF5200] text-white px-2 py-0.5 rounded-full uppercase">Active</span>
-        </div>
-
         {/* Inputs */}
         <div className="space-y-4">
           <div>
@@ -108,7 +98,7 @@ export const TripCalculatorModal: React.FC<TripCalculatorModalProps> = ({
               <input
                 type="number"
                 step="0.1"
-                placeholder="130"
+                placeholder="145"
                 value={fuelPricePerLiter}
                 onChange={(e) => setFuelPricePerLiter(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#FF5200]"
@@ -142,7 +132,7 @@ export const TripCalculatorModal: React.FC<TripCalculatorModalProps> = ({
               <input
                 type="number"
                 step="10"
-                placeholder="2600"
+                placeholder="3625"
                 value={totalFuelPrice}
                 onChange={(e) => setTotalFuelPrice(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#FF5200]"
