@@ -207,9 +207,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <p className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
                   {lang === 'bn' ? 'পরবর্তী সার্ভিস টার্গেট' : 'Next Service Target'}
                 </p>
-                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-[#FF5200]/10 text-[#FF5200] border border-[#FF5200]/20">
-                  {customServiceTarget !== null ? (lang === 'bn' ? 'কাস্টম' : 'Custom') : (lang === 'bn' ? 'অটো (+৫,০০০ কিমি)' : 'Auto (+5,000 KM)')}
-                </span>
               </div>
               <p className="text-3xl font-extrabold text-[#FF5200]">
                 {nextServiceTargetKm.toLocaleString()} <span className="text-base font-bold text-slate-500 dark:text-zinc-400">{t.km}</span>
@@ -225,9 +222,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   setInputTargetKm(nextServiceTargetKm.toString());
                   setShowEditServiceModal(true);
                 }}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#FF5200] hover:bg-[#E04800] text-white text-[11px] font-bold shadow-sm transition"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#FF5200] hover:bg-[#E04800] text-white text-[10px] font-bold shadow-sm transition"
               >
-                <Edit3 className="w-3 h-3" />
+                <Edit3 className="w-2.5 h-2.5" />
                 <span>{lang === 'bn' ? 'পরিবর্তন' : 'Fix Target'}</span>
               </button>
             </div>

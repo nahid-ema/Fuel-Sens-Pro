@@ -27,16 +27,12 @@ import {
   serverTimestamp
 } from './lib/firebase';
 
-// Helper to remove undefined or null values before saving to Firestore
+// Helper to remove undefined values before saving to Firestore
 function sanitizeForFirestore<T extends Record<string, any>>(obj: T): Record<string, any> {
   const clean: Record<string, any> = {};
   for (const [key, value] of Object.entries(obj)) {
-    if (value !== undefined && value !== null) {
-      if (typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date) && typeof value?.toDate !== 'function') {
-        clean[key] = sanitizeForFirestore(value);
-      } else {
-        clean[key] = value;
-      }
+    if (value !== undefined) {
+      clean[key] = value;
     }
   }
   return clean;
