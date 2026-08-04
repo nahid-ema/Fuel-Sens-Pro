@@ -17,6 +17,7 @@ import {
   auth,
   db,
   onAuthStateChanged,
+  signInAnonymously,
   firebaseSignOut,
   collection,
   doc,
@@ -87,10 +88,13 @@ export default function App() {
     }, 4000);
   };
 
-  // Test Firebase Connection on App Load
+  // Test Firebase Connection & Anonymous Auth on App Load
   useEffect(() => {
     async function testConnection() {
       try {
+        if (!auth.currentUser) {
+          await signInAnonymously(auth).catch(() => {});
+        }
         await getDocFromServer(doc(db, 'test', 'connection'));
         setSyncStatus('synced');
       } catch (error) {
@@ -481,6 +485,16 @@ export default function App() {
     setSyncStatus('syncing');
     const targetUid = user?.uid || 'guest_driver';
     try {
+      const startTime = Date.now();
+      
+      // Test Ping
+      await setDoc(doc(db, 'testSync', 'ping'), {
+        timestamp: serverTimestamp(),
+        pingBy: targetUid
+      });
+      await getDocFromServer(doc(db, 'testSync', 'ping'));
+      const latency = Date.now() - startTime;
+
       // 1. Upload all fuel logs
       for (const log of fuelLogs) {
         const payload = sanitizeForFirestore({
@@ -516,12 +530,17 @@ export default function App() {
       setSyncStatus('synced');
       showToast(
         lang === 'bn'
-          ? 'ফায়ারবেস ক্লাউডে সমস্ত ডেটা ও সেটিং সফলভাবে সিঙ্ক হয়েছে!'
-          : 'All logs and settings successfully synced online to Firebase Cloud!'
+          ? `ফায়ারবেস ক্লাউড কানেক্টেড! রেসপন্স টাইম: ${latency}ms`
+          : `Firebase Cloud Connected! Latency: ${latency}ms`
       );
     } catch (err) {
       console.error('Manual sync error:', err);
       setSyncStatus('error');
+      showToast(
+        lang === 'bn'
+          ? 'ক্লাউড সিঙ্কে ত্রুটি ঘটেছে, পুনরায় চেষ্টা করুন।'
+          : 'Cloud sync error occurred. Please try again.'
+      );
     }
   };
 
