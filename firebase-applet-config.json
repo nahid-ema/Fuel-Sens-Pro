@@ -1,12 +1,10 @@
 {
-  "projectId": "reflected-fortress-69ffs",
-  "appId": "1:713845973101:web:51bf181980ae8466ecdf64",
-  "apiKey": "AIzaSyDBc2Mt6e1GLuywZrDrYMtbXF-7EvF5K7A",
-  "authDomain": "reflected-fortress-69ffs.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-fuelflow-6445f92f-8f3c-4026-91b3-dd0c5792cab0",
-  "storageBucket": "reflected-fortress-69ffs.firebasestorage.app",
-  "messagingSenderId": "713845973101",
-  "measurementId": "",
-  "oAuthClientId": "713845973101-761762sf5pl8bafol16l1f13ka7gso6i.apps.googleusercontent.com",
-  "recaptchaSiteKey": ""
+  "projectId": "fuel-flow0",
+  "appId": "1:168176085455:web:3cbb775d031963b9198aba",
+  "apiKey": "AIzaSyD70Y7BhZsAuJs-DowFTXvzucfFbCVDlrQ",
+  "authDomain": "fuel-flow0.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "fuel-flow0.firebasestorage.app",
+  "messagingSenderId": "168176085455",
+  "measurementId": "G-2YBCCECKSJ"
 }

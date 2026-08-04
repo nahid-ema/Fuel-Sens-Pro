@@ -17,7 +17,6 @@ import {
   auth,
   db,
   onAuthStateChanged,
-  signInAnonymously,
   firebaseSignOut,
   collection,
   doc,
@@ -90,13 +89,10 @@ export default function App() {
     }, 4000);
   };
 
-  // Test Firebase Connection & Anonymous Auth on App Load
+  // Test Firebase Connection on App Load
   useEffect(() => {
     async function testConnection() {
       try {
-        if (!auth.currentUser) {
-          await signInAnonymously(auth).catch(() => {});
-        }
         await getDocFromServer(doc(db, 'test', 'connection'));
         setSyncStatus('synced');
       } catch (error) {
@@ -115,31 +111,33 @@ export default function App() {
     const saved = localStorage.getItem('fuelflow_user');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (parsed.isGuest) {
+          return null;
+        }
+        return parsed;
       } catch {
         // Fallback
       }
     }
-    return {
-      email: 'guest@fuelflow.app',
-      name: 'Guest Driver',
-      isGuest: true,
-      uid: 'guest_driver'
-    };
+    return null;
   });
 
   // Listen to Firebase auth state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
+      if (firebaseUser && !firebaseUser.isAnonymous) {
         const u: User = {
           email: firebaseUser.email || 'guest@fuelflow.app',
-          name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Guest Driver',
-          isGuest: firebaseUser.isAnonymous,
+          name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
+          isGuest: false,
           uid: firebaseUser.uid
         };
         setUser(u);
         localStorage.setItem('fuelflow_user', JSON.stringify(u));
+      } else {
+        setUser(null);
+        localStorage.removeItem('fuelflow_user');
       }
     });
     return () => unsubscribe();
@@ -361,13 +359,7 @@ export default function App() {
     } catch (err) {
       console.error('Sign out error:', err);
     }
-    const guestUser: User = {
-      email: 'guest@fuelflow.app',
-      name: 'Guest Driver',
-      isGuest: true,
-      uid: 'guest_driver'
-    };
-    setUser(guestUser);
+    setUser(null);
     localStorage.removeItem('fuelflow_user');
     
     // Clear local data on sign out so next user gets a fresh slate
@@ -642,6 +634,12 @@ export default function App() {
 
   // 6. Modals State
   const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!user) {
+      setShowAuthModal(true);
+    }
+  }, [user]);
   const [showAddFuelModal, setShowAddFuelModal] = useState<boolean>(false);
   const [showAddMaintenanceModal, setShowAddMaintenanceModal] = useState<boolean>(false);
   const [showTripCalculatorModal, setShowTripCalculatorModal] = useState<boolean>(false);
@@ -755,9 +753,10 @@ export default function App() {
       {/* Modals */}
       <AuthModal
         isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
+        onClose={() => { if (user) setShowAuthModal(false); }}
         onAuthenticate={handleAuthenticate}
         lang={lang}
+        canClose={!!user}
       />
 
       <AddFuelModal

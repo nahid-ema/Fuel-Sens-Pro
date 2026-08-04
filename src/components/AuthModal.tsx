@@ -6,7 +6,6 @@ import {
   auth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signInAnonymously,
   signInWithPopup,
   GoogleAuthProvider,
   updateProfile,
@@ -21,13 +20,15 @@ interface AuthModalProps {
   onClose: () => void;
   onAuthenticate: (user: User) => void;
   lang?: Language;
+  canClose?: boolean;
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose,
   onAuthenticate,
-  lang = 'en'
+  lang = 'en',
+  canClose = true
 }) => {
   const t = translations[lang];
   const [mode, setMode] = useState<'login' | 'signup'>('login');
@@ -103,22 +104,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           isGuest: false,
           uid: userCred.user.uid
         });
+        onClose();
       } else {
-        const fallbackUid = 'usr_' + btoa(trimmedEmail).replace(/[^a-zA-Z0-9]/g, '').slice(0, 20);
-        onAuthenticate({
-          email: trimmedEmail,
-          name: displayName,
-          isGuest: false,
-          uid: fallbackUid
-        });
+        throw new Error('Authentication failed. Please try again.');
       }
-      onClose();
     } catch (err: any) {
       let msg = err?.message || 'Authentication error occurred.';
       if (err?.code === 'auth/wrong-password') {
         msg = lang === 'bn' ? 'ভুল পাসওয়ার্ড। আবার চেষ্টা করুন।' : 'Incorrect password. Please try again.';
       } else if (err?.code === 'auth/weak-password') {
         msg = lang === 'bn' ? 'পাসওয়ার্ড অন্তত ৬ অক্ষরের হতে হবে।' : 'Password should be at least 6 characters.';
+      } else if (err?.code === 'auth/operation-not-allowed') {
+        msg = lang === 'bn' ? 'লগইন মাধ্যমটি ফায়ারবেস কনসোলে বন্ধ আছে। দয়া করে ফায়ারবেস Authentication থেকে এটি চালু করুন।' : 'This sign-in method is not enabled. Please enable it in the Firebase Console (Authentication > Sign-in method).';
       }
       setError(msg);
     } finally {
@@ -142,55 +139,31 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         onClose();
       }
     } catch (err: any) {
-      // Direct fallback authentication when Google Sign-in is restricted
-      onAuthenticate({
-        email: 'google.user@fuelflow.app',
-        name: lang === 'bn' ? 'গুগল ব্যবহারকারী' : 'Google User',
-        isGuest: false,
-        uid: 'google_' + Date.now()
-      });
-      onClose();
+      let msg = err?.message || 'Authentication error occurred.';
+      if (err?.code === 'auth/operation-not-allowed') {
+        msg = lang === 'bn' ? 'গুগল লগইন ফায়ারবেস কনসোলে বন্ধ আছে। দয়া করে ফায়ারবেস Authentication থেকে Google Sign-in চালু করুন।' : 'Google Sign-in is not enabled. Please enable it in the Firebase Console.';
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGuestAccess = async () => {
-    setError('');
-    setLoading(true);
-    try {
-      const userCred = await signInAnonymously(auth);
-      onAuthenticate({
-        email: 'guest@fuelflow.app',
-        name: lang === 'bn' ? 'গেস্ট ড্রাইভার' : 'Guest Driver',
-        isGuest: true,
-        uid: userCred.user.uid
-      });
-      onClose();
-    } catch {
-      onAuthenticate({
-        email: 'guest@fuelflow.app',
-        name: lang === 'bn' ? 'গেস্ট ড্রাইভার' : 'Guest Driver',
-        isGuest: true,
-        uid: 'guest_' + Date.now()
-      });
-      onClose();
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
       <div className="relative w-full max-w-md m3-card bg-white dark:bg-[#121214] p-6 shadow-2xl border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white">
         
         {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 transition"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        {canClose && (
+          <button
+            onClick={onClose}
+            className="absolute top-5 right-5 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 transition"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
 
         {/* Header */}
         <div className="text-center mb-6 pt-2">
@@ -343,16 +316,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <span>{lang === 'bn' ? 'গুগল দিয়ে সাইন ইন' : 'Sign in with Google'}</span>
           </button>
 
-          {/* Guest Access */}
-          <button
-            type="button"
-            onClick={handleGuestAccess}
-            disabled={loading}
-            className="w-full py-2.5 rounded-full bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-100 font-bold text-xs transition flex items-center justify-center gap-2 border border-slate-200 dark:border-zinc-700 disabled:opacity-50"
-          >
-            <ShieldCheck className="w-4 h-4 text-[#FF5200]" />
-            <span>{t.guestBtn}</span>
-          </button>
+
         </div>
 
       </div>
