@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FuelLog, MaintenanceLog, User, TabType } from './types';
 import { INITIAL_FUEL_LOGS, INITIAL_MAINTENANCE_LOGS } from './data/initialData';
+import { Language } from './lib/translations';
 import { Navbar } from './components/Navbar';
 import { BottomNav } from './components/BottomNav';
 import { DashboardView } from './components/DashboardView';
@@ -10,6 +11,7 @@ import { AuthModal } from './components/AuthModal';
 import { AddFuelModal } from './components/AddFuelModal';
 import { AddMaintenanceModal } from './components/AddMaintenanceModal';
 import { TripCalculatorModal } from './components/TripCalculatorModal';
+import { PwaInstallModal } from './components/PwaInstallModal';
 import {
   auth,
   db,
@@ -26,6 +28,20 @@ import {
 } from './lib/firebase';
 
 export default function App() {
+  // Language State (English vs Bangla)
+  const [lang, setLang] = useState<Language>(() => {
+    const saved = localStorage.getItem('fuelflow_lang');
+    return saved === 'bn' ? 'bn' : 'en';
+  });
+
+  const toggleLanguage = () => {
+    setLang((prev) => {
+      const next = prev === 'en' ? 'bn' : 'en';
+      localStorage.setItem('fuelflow_lang', next);
+      return next;
+    });
+  };
+
   // 1. Theme State (Dark vs Light)
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('fuelflow_theme');
@@ -289,6 +305,7 @@ export default function App() {
   // PWA Install Prompt State
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState<boolean>(false);
+  const [showInstallGuideModal, setShowInstallGuideModal] = useState<boolean>(false);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -305,12 +322,15 @@ export default function App() {
   }, []);
 
   const handleInstallPwa = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log('PWA install choice outcome:', outcome);
-    setDeferredPrompt(null);
-    setShowInstallBanner(false);
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log('PWA install choice outcome:', outcome);
+      setDeferredPrompt(null);
+      setShowInstallBanner(false);
+    } else {
+      setShowInstallGuideModal(true);
+    }
   };
 
   return (
@@ -324,6 +344,10 @@ export default function App() {
         onOpenTripCalculator={() => setShowTripCalculatorModal(true)}
         onOpenAuthModal={() => setShowAuthModal(true)}
         onSignOut={handleSignOut}
+        onInstallApp={handleInstallPwa}
+        canInstall={true}
+        lang={lang}
+        onToggleLanguage={toggleLanguage}
       />
 
       {/* PWA Chrome Install Notification Banner */}
@@ -335,8 +359,8 @@ export default function App() {
                 ⚡
               </div>
               <div>
-                <p className="text-xs font-bold">Install Fuel Flow App</p>
-                <p className="text-[10px] text-white/80">Add to home screen for fast Chrome access</p>
+                <p className="text-xs font-bold">{lang === 'bn' ? 'ফ্যুয়েল ফ্লো অ্যাপ ইনস্টল করুন' : 'Install Fuel Flow App'}</p>
+                <p className="text-[10px] text-white/80">{lang === 'bn' ? 'ক্রোমে দ্রুত ব্যবহারের জন্য হোম স্ক্রিনে যোগ করুন' : 'Add to home screen for fast Chrome access'}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -344,13 +368,13 @@ export default function App() {
                 onClick={handleInstallPwa}
                 className="px-3 py-1.5 rounded-full bg-white text-[#FF5200] font-bold text-xs shadow-sm hover:bg-slate-100 transition"
               >
-                Install Now
+                {lang === 'bn' ? 'এখনই ইনস্টল করুন' : 'Install Now'}
               </button>
               <button
                 onClick={() => setShowInstallBanner(false)}
                 className="text-xs text-white/80 hover:text-white px-2 py-1"
               >
-                Dismiss
+                {lang === 'bn' ? 'বন্ধ করুন' : 'Dismiss'}
               </button>
             </div>
           </div>
@@ -366,6 +390,7 @@ export default function App() {
             onChangeTab={(tab) => setActiveTab(tab)}
             onOpenAddFuel={() => setShowAddFuelModal(true)}
             onOpenAddMaintenance={() => setShowAddMaintenanceModal(true)}
+            lang={lang}
           />
         )}
 
@@ -374,6 +399,7 @@ export default function App() {
             logs={fuelLogs}
             onOpenAddFuel={() => setShowAddFuelModal(true)}
             onDeleteLog={handleDeleteFuelLog}
+            lang={lang}
           />
         )}
 
@@ -382,6 +408,7 @@ export default function App() {
             logs={maintenanceLogs}
             onOpenAddMaintenance={() => setShowAddMaintenanceModal(true)}
             onDeleteLog={handleDeleteMaintenanceLog}
+            lang={lang}
           />
         )}
       </main>
@@ -393,6 +420,7 @@ export default function App() {
         onOpenTripCalculator={() => setShowTripCalculatorModal(true)}
         fuelCount={fuelLogs.length}
         maintenanceCount={maintenanceLogs.length}
+        lang={lang}
       />
 
       {/* Modals */}
@@ -400,6 +428,7 @@ export default function App() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onAuthenticate={handleAuthenticate}
+        lang={lang}
       />
 
       <AddFuelModal
@@ -407,6 +436,7 @@ export default function App() {
         onClose={() => setShowAddFuelModal(false)}
         onAddLog={handleAddFuelLog}
         latestOdometer={latestOdometer}
+        lang={lang}
       />
 
       <AddMaintenanceModal
@@ -414,12 +444,21 @@ export default function App() {
         onClose={() => setShowAddMaintenanceModal(false)}
         onAddLog={handleAddMaintenanceLog}
         latestOdometer={latestOdometer}
+        lang={lang}
       />
 
       <TripCalculatorModal
         isOpen={showTripCalculatorModal}
         onClose={() => setShowTripCalculatorModal(false)}
         onSaveTripToFuelLogs={handleAddFuelLog}
+        lang={lang}
+      />
+
+      <PwaInstallModal
+        isOpen={showInstallGuideModal}
+        onClose={() => setShowInstallGuideModal(false)}
+        onTriggerInstall={handleInstallPwa}
+        hasNativePrompt={!!deferredPrompt}
       />
 
     </div>

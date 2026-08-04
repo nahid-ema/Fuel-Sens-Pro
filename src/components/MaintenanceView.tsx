@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MaintenanceLog } from '../types';
+import { Language, translations } from '../lib/translations';
 import {
   Wrench,
   Plus,
@@ -16,18 +17,35 @@ interface MaintenanceViewProps {
   logs: MaintenanceLog[];
   onOpenAddMaintenance: () => void;
   onDeleteLog: (id: string) => void;
+  lang: Language;
 }
 
 export const MaintenanceView: React.FC<MaintenanceViewProps> = ({
   logs,
   onOpenAddMaintenance,
-  onDeleteLog
+  onDeleteLog,
+  lang
 }) => {
+  const t = translations[lang];
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const categories = ['All', 'Master Service', 'Engine Oil', 'Brake Service', 'General Service', 'Tires', 'Other'];
+
+  const getCategoryLabel = (cat: string) => {
+    switch (cat) {
+      case 'All': return t.allCategories;
+      case 'Master Service': return t.catMasterService;
+      case 'Engine Oil': return t.catEngineOil;
+      case 'Brake Service': return t.catBrakeService;
+      case 'Tires': return t.catTires;
+      case 'Transmission': return t.catTransmission;
+      case 'General Service': return t.catGeneralService;
+      case 'Other': return t.catOther;
+      default: return cat;
+    }
+  };
 
   const filteredLogs = logs.filter((log) => {
     const matchesCategory = selectedCategory === 'All' || log.category === selectedCategory;
@@ -48,10 +66,10 @@ export const MaintenanceView: React.FC<MaintenanceViewProps> = ({
         <div>
           <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
             <Wrench className="w-6 h-6 text-[#FF5200]" />
-            Maintenance & Service Logs
+            {t.maintenanceTitle}
           </h2>
           <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
-            Keep track of oil changes, brake pads, tire rotations, and repair costs in BDT (৳).
+            {t.maintenanceSubtitle}
           </p>
         </div>
 
@@ -60,7 +78,7 @@ export const MaintenanceView: React.FC<MaintenanceViewProps> = ({
           <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400 dark:text-zinc-500" />
           <input
             type="text"
-            placeholder="Search service logs..."
+            placeholder={t.searchMaint}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 rounded-2xl bg-white dark:bg-[#121214] border border-slate-200 dark:border-zinc-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#FF5200] transition"
@@ -82,7 +100,7 @@ export const MaintenanceView: React.FC<MaintenanceViewProps> = ({
                   : 'bg-white dark:bg-[#121214] text-slate-600 dark:text-zinc-300 border border-slate-200 dark:border-zinc-800 hover:border-[#FF5200]/40'
               }`}
             >
-              {cat}
+              {getCategoryLabel(cat)}
             </button>
           );
         })}

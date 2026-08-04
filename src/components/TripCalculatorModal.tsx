@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
 import { X, Calculator, Flame, Save, Fuel, ArrowRight, Sparkles, Check } from 'lucide-react';
 import { FuelLog } from '../types';
+import { Language, translations } from '../lib/translations';
 
 interface TripCalculatorModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSaveTripToFuelLogs: (log: Omit<FuelLog, 'id'>) => void;
+  lang?: Language;
 }
 
 export const TripCalculatorModal: React.FC<TripCalculatorModalProps> = ({
   isOpen,
   onClose,
-  onSaveTripToFuelLogs
+  onSaveTripToFuelLogs,
+  lang = 'en'
 }) => {
+  const t = translations[lang];
   const [fuelPricePerLiter, setFuelPricePerLiter] = useState<string>('130');
   const [distanceKm, setDistanceKm] = useState<string>('250');
   const [totalFuelPrice, setTotalFuelPrice] = useState<string>('2600');
@@ -69,10 +73,10 @@ export const TripCalculatorModal: React.FC<TripCalculatorModalProps> = ({
             </div>
             <div>
               <h3 className="text-lg font-black tracking-tight flex items-center gap-2">
-                Trip & Fuel Calculator
+                {t.tripCalcTitle}
               </h3>
               <p className="text-xs text-slate-500 dark:text-zinc-400">
-                Estimate trip liters, mileage & cost per kilometer
+                {t.tripCalcDesc}
               </p>
             </div>
           </div>

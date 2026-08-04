@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FuelLog } from '../types';
+import { Language, translations } from '../lib/translations';
 import {
   Fuel,
   Plus,
@@ -16,13 +17,16 @@ interface FuelViewProps {
   logs: FuelLog[];
   onOpenAddFuel: () => void;
   onDeleteLog: (id: string) => void;
+  lang: Language;
 }
 
 export const FuelView: React.FC<FuelViewProps> = ({
   logs,
   onOpenAddFuel,
-  onDeleteLog
+  onDeleteLog,
+  lang
 }) => {
+  const t = translations[lang];
   const [searchTerm, setSearchTerm] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -43,10 +47,10 @@ export const FuelView: React.FC<FuelViewProps> = ({
         <div>
           <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
             <Fuel className="w-6 h-6 text-[#FF5200]" />
-            Fuel Fill-Up Logs
+            {t.fuelLogsTitle}
           </h2>
           <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
-            Track fuel efficiency, mileage, and fill-up expenses in BDT (৳).
+            {t.fuelLogsSubtitle}
           </p>
         </div>
 
@@ -55,7 +59,7 @@ export const FuelView: React.FC<FuelViewProps> = ({
           <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400 dark:text-zinc-500" />
           <input
             type="text"
-            placeholder="Search logs or notes..."
+            placeholder={t.searchFuel}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 rounded-2xl bg-white dark:bg-[#121214] border border-slate-200 dark:border-zinc-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#FF5200] transition"

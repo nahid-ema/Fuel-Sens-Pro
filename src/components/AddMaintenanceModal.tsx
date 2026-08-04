@@ -1,20 +1,24 @@
 import React, { useState } from 'react';
 import { X, Wrench, Calendar, Gauge, DollarSign, FileText, Tag } from 'lucide-react';
 import { MaintenanceLog } from '../types';
+import { Language, translations } from '../lib/translations';
 
 interface AddMaintenanceModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddLog: (log: Omit<MaintenanceLog, 'id'>) => void;
   latestOdometer?: number;
+  lang?: Language;
 }
 
 export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
   isOpen,
   onClose,
   onAddLog,
-  latestOdometer = 42500
+  latestOdometer = 42500,
+  lang = 'en'
 }) => {
+  const t = translations[lang];
   const [serviceTitle, setServiceTitle] = useState('');
   const [category, setCategory] = useState<MaintenanceLog['category']>('Master Service');
   const [totalCost, setTotalCost] = useState('');
@@ -76,8 +80,8 @@ export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
               <Wrench className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-black tracking-tight">Record Maintenance Service</h3>
-              <p className="text-xs text-slate-500 dark:text-zinc-400">Log repairs, oil changes, or parts replaced</p>
+              <h3 className="text-lg font-black tracking-tight">{t.addMaintTitle}</h3>
+              <p className="text-xs text-slate-500 dark:text-zinc-400">{t.addMaintDesc}</p>
             </div>
           </div>
 

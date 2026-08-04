@@ -1,5 +1,6 @@
 import React from 'react';
 import { FuelLog, MaintenanceLog, TabType } from '../types';
+import { Language, translations } from '../lib/translations';
 import {
   Flame,
   Droplets,
@@ -21,6 +22,7 @@ interface DashboardViewProps {
   onChangeTab: (tab: TabType) => void;
   onOpenAddFuel: () => void;
   onOpenAddMaintenance: () => void;
+  lang: Language;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -28,8 +30,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   maintenanceLogs,
   onChangeTab,
   onOpenAddFuel,
-  onOpenAddMaintenance
+  onOpenAddMaintenance,
+  lang
 }) => {
+  const t = translations[lang];
+
   // 1. Calculate Average Fuel Efficiency in KM/L
   const totalKm = fuelLogs.reduce((acc, log) => acc + log.travelKm, 0);
   const totalLiters = fuelLogs.reduce((acc, log) => acc + log.liters, 0);
@@ -69,12 +74,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              LIVE LOGS
+              {t.liveLogs}
             </span>
           </div>
 
           <span className="text-xs text-zinc-400 font-medium">
-            {fuelLogs.length} Fill-ups Tracked
+            {fuelLogs.length} {lang === 'bn' ? 'টি এন্ট্রি ট্র্যাক করা হয়েছে' : 'Fill-ups Tracked'}
           </span>
         </div>
 
@@ -82,14 +87,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <div className="mb-6">
           <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1 flex items-center gap-1.5">
             <Activity className="w-3.5 h-3.5 text-[#FF5200]" />
-            Overall Fuel Efficiency
+            {t.fuelEfficiency}
           </p>
           <div className="flex items-baseline gap-3">
             <span className="text-5xl md:text-6xl font-black tracking-tight text-white drop-shadow-sm">
               {averageEfficiency}
             </span>
             <span className="text-xl md:text-2xl font-bold text-[#FF5200]">
-              KM/L
+              {t.kmPerLiter}
             </span>
           </div>
         </div>
@@ -97,15 +102,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         {/* Sub-Metrics Row Inside Hero */}
         <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-800/80">
           <div>
-            <p className="text-[11px] font-medium text-zinc-400">Avg. Cost Per Kilometer</p>
+            <p className="text-[11px] font-medium text-zinc-400">{t.avgCostPerKm}</p>
             <p className="text-lg md:text-xl font-bold text-emerald-400 mt-0.5">
-              ৳ {averageCostPerKm} <span className="text-xs text-zinc-500 font-normal">/ KM</span>
+              {t.bdtSymbol} {averageCostPerKm} <span className="text-xs text-zinc-500 font-normal">/ {t.km}</span>
             </p>
           </div>
           <div>
-            <p className="text-[11px] font-medium text-zinc-400">Total Distance Tracked</p>
+            <p className="text-[11px] font-medium text-zinc-400">{t.totalDistance}</p>
             <p className="text-lg md:text-xl font-bold text-white mt-0.5">
-              {totalKm.toLocaleString()} <span className="text-xs text-zinc-500 font-normal">KM</span>
+              {totalKm.toLocaleString()} <span className="text-xs text-zinc-500 font-normal">{t.km}</span>
             </p>
           </div>
         </div>
@@ -117,7 +122,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-[#FF5200] hover:bg-[#E04800] text-white font-bold text-xs tracking-wide shadow-lg shadow-[#FF5200]/30 transition flex items-center justify-center gap-2"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
-            <span>Log Fuel Fill-Up</span>
+            <span>{t.addFuelBtn}</span>
           </button>
         </div>
 
@@ -131,10 +136,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="flex items-start justify-between">
             <div>
               <p className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
-                Last Fill Volume
+                {lang === 'bn' ? 'সর্বশেষ ফুয়েল পরিমাণ' : 'Last Fill Volume'}
               </p>
               <p className="text-3xl font-extrabold text-slate-900 dark:text-white">
-                {lastFillLiters}
+                {lastFillLiters} <span className="text-sm font-bold text-slate-400">L</span>
               </p>
             </div>
             <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
@@ -144,7 +149,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           <div className="mt-4 pt-3 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
             <span>
-              {lastFuelLog ? `Date: ${lastFuelLog.date}` : 'No logs yet'}
+              {lastFuelLog ? `${t.date}: ${lastFuelLog.date}` : t.noLogsYet}
             </span>
             <span className="font-semibold text-slate-700 dark:text-zinc-300">
               {lastFuelLog ? `৳ ${lastFuelLog.perLiterCost} / L` : ''}
@@ -157,10 +162,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="flex items-start justify-between">
             <div>
               <p className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
-                Next Service Target
+                {lang === 'bn' ? 'পরবর্তী সার্ভিস টার্গেট' : 'Next Service Target'}
               </p>
               <p className="text-3xl font-extrabold text-[#FF5200]">
-                {nextServiceTargetKm.toLocaleString()} <span className="text-base font-bold text-slate-500 dark:text-zinc-400">KM</span>
+                {nextServiceTargetKm.toLocaleString()} <span className="text-base font-bold text-slate-500 dark:text-zinc-400">{t.km}</span>
               </p>
             </div>
             <div className="w-12 h-12 rounded-2xl bg-[#FF5200]/10 text-[#FF5200] flex items-center justify-center">
@@ -171,8 +176,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {/* Service Progress */}
           <div className="mt-4 space-y-1.5">
             <div className="flex justify-between text-[11px] font-semibold text-slate-600 dark:text-zinc-400">
-              <span>Current Odometer: {currentOdometer.toLocaleString()} KM</span>
-              <span className="text-emerald-600 dark:text-emerald-400">In {kmUntilService} KM</span>
+              <span>{lang === 'bn' ? 'বর্তমান ওডোমিটার' : 'Current Odometer'}: {currentOdometer.toLocaleString()} {t.km}</span>
+              <span className="text-emerald-600 dark:text-emerald-400">
+                {lang === 'bn' ? `${kmUntilService} কিমি পরে` : `In ${kmUntilService} KM`}
+              </span>
             </div>
             <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-zinc-800 overflow-hidden">
               <div
@@ -195,18 +202,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div>
             <h3 className="text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
               <Wrench className="w-5 h-5 text-[#FF5200]" />
-              Recent Maintenance Preview
+              {t.recentMaintenance}
             </h3>
             <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
-              Service history & vehicle health logs
+              {lang === 'bn' ? 'সার্ভিস ইতিহাস ও গাড়ির কন্ডিশন লগ' : 'Service history & vehicle health logs'}
             </p>
           </div>
 
           <button
             onClick={() => onChangeTab('maintenance')}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-zinc-800/80 hover:bg-[#FF5200]/10 hover:text-[#FF5200] text-xs font-bold text-slate-700 dark:text-zinc-200 transition"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-zinc-800/80 hover:bg-[#FF5200]/10 hover:text-[#FF5200] text-xs font-bold text-slate-700 dark:text-zinc-200 transition uppercase"
           >
-            <span>VIEW ALL</span>
+            <span>{t.viewAll}</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -233,7 +240,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         {maint.date}
                       </span>
                       <span>•</span>
-                      <span>{maint.odometerKm.toLocaleString()} KM</span>
+                      <span>{maint.odometerKm.toLocaleString()} {t.km}</span>
                     </div>
                   </div>
                 </div>
@@ -249,12 +256,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         ) : (
           <div className="text-center py-8 border border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl">
-            <p className="text-xs text-slate-500 dark:text-zinc-400">No maintenance records logged yet.</p>
+            <p className="text-xs text-slate-500 dark:text-zinc-400">{lang === 'bn' ? 'এখনো কোন সার্ভিস রেকর্ড যোগ করা হয়নি।' : 'No maintenance records logged yet.'}</p>
             <button
               onClick={onOpenAddMaintenance}
               className="mt-3 px-4 py-1.5 rounded-full bg-[#FF5200]/10 text-[#FF5200] text-xs font-bold hover:bg-[#FF5200] hover:text-white transition"
             >
-              Add First Maintenance
+              {t.addMaintBtn}
             </button>
           </div>
         )}
@@ -264,7 +271,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* Developer Attribution Footer */}
       <footer className="pt-6 pb-2 text-center border-t border-slate-200/60 dark:border-zinc-800/60">
         <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400 tracking-wide">
-          Developer Nahid Ferdous Emon
+          {t.developerCredit}
         </p>
         <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-1">
           Fuel Flow © 2026 • Vehicle Fuel & Service Tracker

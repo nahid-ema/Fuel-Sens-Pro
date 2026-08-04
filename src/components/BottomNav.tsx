@@ -1,6 +1,7 @@
 import React from 'react';
 import { LayoutDashboard, Calculator, Fuel, Wrench } from 'lucide-react';
 import { TabType } from '../types';
+import { Language, translations } from '../lib/translations';
 
 interface BottomNavProps {
   activeTab: TabType;
@@ -8,6 +9,7 @@ interface BottomNavProps {
   onOpenTripCalculator: () => void;
   fuelCount: number;
   maintenanceCount: number;
+  lang: Language;
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({
@@ -15,8 +17,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onChangeTab,
   onOpenTripCalculator,
   fuelCount,
-  maintenanceCount
+  maintenanceCount,
+  lang
 }) => {
+  const t = translations[lang];
+
   return (
     <div className="fixed bottom-0 left-0 right-0 z-30 pb-safe bg-white/90 dark:bg-[#09090B]/90 backdrop-blur-lg border-t border-slate-200 dark:border-zinc-800 transition-colors">
       <div className="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
@@ -33,7 +38,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <div className={`p-1.5 rounded-full transition-colors ${activeTab === 'dashboard' ? 'bg-[#FF5200]/10' : 'bg-transparent'}`}>
             <LayoutDashboard className={`w-5 h-5 ${activeTab === 'dashboard' ? 'stroke-[2.5]' : 'stroke-2'}`} />
           </div>
-          <span className="text-[11px] mt-0.5 tracking-tight">Dashboard</span>
+          <span className="text-[11px] mt-0.5 tracking-tight">{t.dashboard}</span>
           {activeTab === 'dashboard' && (
             <span className="absolute -bottom-1 w-8 h-1 rounded-full bg-[#FF5200] shadow-sm shadow-[#FF5200]/50" />
           )}
@@ -48,7 +53,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <div className="p-1.5 rounded-full bg-slate-100 dark:bg-zinc-800/80 text-[#FF5200]">
             <Calculator className="w-5 h-5 stroke-[2.2]" />
           </div>
-          <span className="text-[11px] mt-0.5 tracking-tight font-semibold">Calculator</span>
+          <span className="text-[11px] mt-0.5 tracking-tight font-semibold">{t.calculator}</span>
         </button>
 
         {/* Fuel Button */}
@@ -63,7 +68,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <div className={`p-1.5 rounded-full transition-colors ${activeTab === 'fuel' ? 'bg-[#FF5200]/10' : 'bg-transparent'}`}>
             <Fuel className={`w-5 h-5 ${activeTab === 'fuel' ? 'stroke-[2.5]' : 'stroke-2'}`} />
           </div>
-          <span className="text-[11px] mt-0.5 tracking-tight">Fuel</span>
+          <span className="text-[11px] mt-0.5 tracking-tight">{t.fuel}</span>
           {activeTab === 'fuel' && (
             <span className="absolute -bottom-1 w-8 h-1 rounded-full bg-[#FF5200] shadow-sm shadow-[#FF5200]/50" />
           )}
@@ -86,7 +91,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <div className={`p-1.5 rounded-full transition-colors ${activeTab === 'maintenance' ? 'bg-[#FF5200]/10' : 'bg-transparent'}`}>
             <Wrench className={`w-5 h-5 ${activeTab === 'maintenance' ? 'stroke-[2.5]' : 'stroke-2'}`} />
           </div>
-          <span className="text-[11px] mt-0.5 tracking-tight">Maintenance</span>
+          <span className="text-[11px] mt-0.5 tracking-tight">{t.maintenance}</span>
           {activeTab === 'maintenance' && (
             <span className="absolute -bottom-1 w-8 h-1 rounded-full bg-[#FF5200] shadow-sm shadow-[#FF5200]/50" />
           )}

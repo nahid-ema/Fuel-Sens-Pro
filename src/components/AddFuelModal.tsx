@@ -1,20 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { X, Fuel, Flame, Calendar, Gauge, DollarSign, Calculator, FileText } from 'lucide-react';
 import { FuelLog } from '../types';
+import { Language, translations } from '../lib/translations';
 
 interface AddFuelModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddLog: (log: Omit<FuelLog, 'id'>) => void;
   latestOdometer?: number;
+  lang?: Language;
 }
 
 export const AddFuelModal: React.FC<AddFuelModalProps> = ({
   isOpen,
   onClose,
   onAddLog,
-  latestOdometer = 42500
+  latestOdometer = 42500,
+  lang = 'en'
 }) => {
+  const t = translations[lang];
   const [travelKm, setTravelKm] = useState<string>('350');
   const [perLiterCost, setPerLiterCost] = useState<string>('130');
   const [totalCost, setTotalCost] = useState<string>('3640');
@@ -68,8 +72,8 @@ export const AddFuelModal: React.FC<AddFuelModalProps> = ({
               <Fuel className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-black tracking-tight">Log Fuel Fill-Up</h3>
-              <p className="text-xs text-slate-500 dark:text-zinc-400">Record trip distance, cost & liters filled</p>
+              <h3 className="text-lg font-black tracking-tight">{t.addFuelTitle}</h3>
+              <p className="text-xs text-slate-500 dark:text-zinc-400">{t.addFuelDesc}</p>
             </div>
           </div>
 
