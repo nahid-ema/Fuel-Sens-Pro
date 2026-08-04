@@ -203,26 +203,34 @@ export default function App() {
       fuelQuery,
       (snapshot) => {
         setSyncStatus('synced');
-        if (!snapshot.empty) {
-          const docs: FuelLog[] = snapshot.docs.map(
-            (d) => ({ id: d.id, ...d.data() } as FuelLog)
-          );
-          docs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-          setFuelLogs(docs);
-        } else {
-          // If Firestore is empty for user, upload existing local logs to Firestore so user doesn't lose them
-          const logsToUpload = fuelLogsRef.current;
-          if (logsToUpload.length > 0) {
-            logsToUpload.forEach(async (log) => {
+        const cloudDocs: FuelLog[] = snapshot.docs.map(
+          (d) => ({ id: d.id, ...d.data() } as FuelLog)
+        );
+
+        setFuelLogs((prevLocal) => {
+          const mergedMap = new Map<string, FuelLog>();
+          
+          // 1. Add cloud documents
+          cloudDocs.forEach((cd) => mergedMap.set(cd.id, cd));
+
+          // 2. Keep local documents not yet in cloud & back them up to Firestore
+          prevLocal.forEach((localDoc) => {
+            if (!mergedMap.has(localDoc.id)) {
+              mergedMap.set(localDoc.id, localDoc);
               const payload = sanitizeForFirestore({
-                ...log,
+                ...localDoc,
                 userId: targetUid,
                 updatedAt: serverTimestamp()
               });
-              await setDoc(doc(db, 'fuelLogs', log.id), payload).catch(() => {});
-            });
-          }
-        }
+              setDoc(doc(db, 'fuelLogs', localDoc.id), payload).catch(() => {});
+              setDoc(doc(db, 'backups', `fuel_${localDoc.id}`), payload).catch(() => {});
+            }
+          });
+
+          const mergedList = Array.from(mergedMap.values());
+          mergedList.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          return mergedList;
+        });
       },
       (err) => {
         console.warn('Fuel snapshot note:', err);
@@ -240,26 +248,34 @@ export default function App() {
       maintQuery,
       (snapshot) => {
         setSyncStatus('synced');
-        if (!snapshot.empty) {
-          const docs: MaintenanceLog[] = snapshot.docs.map(
-            (d) => ({ id: d.id, ...d.data() } as MaintenanceLog)
-          );
-          docs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-          setMaintenanceLogs(docs);
-        } else {
-          // If Firestore is empty for user, upload local maintenance logs
-          const logsToUpload = maintenanceLogsRef.current;
-          if (logsToUpload.length > 0) {
-            logsToUpload.forEach(async (log) => {
+        const cloudDocs: MaintenanceLog[] = snapshot.docs.map(
+          (d) => ({ id: d.id, ...d.data() } as MaintenanceLog)
+        );
+
+        setMaintenanceLogs((prevLocal) => {
+          const mergedMap = new Map<string, MaintenanceLog>();
+
+          // 1. Add cloud documents
+          cloudDocs.forEach((cd) => mergedMap.set(cd.id, cd));
+
+          // 2. Keep local documents not yet in cloud & back them up
+          prevLocal.forEach((localDoc) => {
+            if (!mergedMap.has(localDoc.id)) {
+              mergedMap.set(localDoc.id, localDoc);
               const payload = sanitizeForFirestore({
-                ...log,
+                ...localDoc,
                 userId: targetUid,
                 updatedAt: serverTimestamp()
               });
-              await setDoc(doc(db, 'maintenanceLogs', log.id), payload).catch(() => {});
-            });
-          }
-        }
+              setDoc(doc(db, 'maintenanceLogs', localDoc.id), payload).catch(() => {});
+              setDoc(doc(db, 'backups', `maint_${localDoc.id}`), payload).catch(() => {});
+            }
+          });
+
+          const mergedList = Array.from(mergedMap.values());
+          mergedList.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          return mergedList;
+        });
       },
       (err) => {
         console.warn('Maint snapshot note:', err);
@@ -495,7 +511,8 @@ export default function App() {
       await getDocFromServer(doc(db, 'testSync', 'ping'));
       const latency = Date.now() - startTime;
 
-      // 1. Upload all fuel logs
+      let fuelCount = 0;
+      // 1. Upload all fuel logs to fuelLogs + backups
       for (const log of fuelLogs) {
         const payload = sanitizeForFirestore({
           ...log,
@@ -503,9 +520,12 @@ export default function App() {
           updatedAt: serverTimestamp()
         });
         await setDoc(doc(db, 'fuelLogs', log.id), payload);
+        await setDoc(doc(db, 'backups', `fuel_${log.id}`), payload).catch(() => {});
+        fuelCount++;
       }
 
-      // 2. Upload all maintenance logs
+      let maintCount = 0;
+      // 2. Upload all maintenance logs to maintenanceLogs + backups
       for (const log of maintenanceLogs) {
         const payload = sanitizeForFirestore({
           ...log,
@@ -513,25 +533,25 @@ export default function App() {
           updatedAt: serverTimestamp()
         });
         await setDoc(doc(db, 'maintenanceLogs', log.id), payload);
+        await setDoc(doc(db, 'backups', `maint_${log.id}`), payload).catch(() => {});
+        maintCount++;
       }
 
       // 3. Upload user settings
-      await setDoc(
-        doc(db, 'userSettings', targetUid),
-        {
-          userId: targetUid,
-          customServiceTarget,
-          customCurrentOdometer,
-          updatedAt: serverTimestamp()
-        },
-        { merge: true }
-      );
+      const settingsPayload = sanitizeForFirestore({
+        userId: targetUid,
+        customServiceTarget,
+        customCurrentOdometer,
+        updatedAt: serverTimestamp()
+      });
+      await setDoc(doc(db, 'userSettings', targetUid), settingsPayload, { merge: true });
+      await setDoc(doc(db, 'backups', `settings_${targetUid}`), settingsPayload, { merge: true }).catch(() => {});
 
       setSyncStatus('synced');
       showToast(
         lang === 'bn'
-          ? `ফায়ারবেস ক্লাউড কানেক্টেড! রেসপন্স টাইম: ${latency}ms`
-          : `Firebase Cloud Connected! Latency: ${latency}ms`
+          ? `ক্লাউড ব্যাকআপ সফল! ${fuelCount}টি ফুয়েল ও ${maintCount}টি সার্ভিস লগ সেভ হয়েছে (${latency}ms)`
+          : `Cloud backup complete! ${fuelCount} fuel & ${maintCount} service logs backed up (${latency}ms)`
       );
     } catch (err) {
       console.error('Manual sync error:', err);
