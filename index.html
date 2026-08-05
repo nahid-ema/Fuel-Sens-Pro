@@ -3,21 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Fuel Sens - Fuel & Maintenance</title>
+    <title>Fuel Flow - Vehicle & Fuel Tracker</title>
     <meta name="description" content="Track fuel efficiency, mileage logs, and maintenance in real time." />
     <meta name="theme-color" content="#FF5200" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Fuel Sens" />
+    <meta name="apple-mobile-web-app-title" content="Fuel Flow" />
     <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/google-sans" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
-    <link rel="icon" type="image/png" sizes="192x192" href="/pwa-192.png" />
     <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/pwa-192.png" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2225%22 fill=%22%23FF5200%22/><path d=%22M30 25 h30 a10 10 0 0 1 10 10 v40 a10 10 0 0 1 -10 10 h-30 a10 10 0 0 1 -10 -10 v-40 a10 10 0 0 1 10 -10 z M65 40 h10 v20 h-10%22 fill=%22none%22 stroke=%22white%22 stroke-width=%228%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>" />
   </head>
   <body>
     <div id="root"></div>
@@ -30,6 +29,7 @@
             .catch(err => console.log('PWA ServiceWorker registration failed:', err));
         });
       }
+
       // Automatically remove any injected Vercel Toolbar elements
       const removeVercelToolbar = () => {
         const selectors = ['vercel-toolbar', 'vercel-live-feedback', '#vercel-toolbar', '[data-vercel-toolbar]', '.vercel-toolbar'];

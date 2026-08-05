@@ -62,8 +62,7 @@ if (typeof window !== 'undefined') {
 let firestoreDb;
 try {
   firestoreDb = initializeFirestore(app, {
-    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
-    experimentalForceLongPolling: true
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
   });
 } catch {
   firestoreDb = getFirestore(app);

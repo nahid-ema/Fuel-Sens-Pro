@@ -53,14 +53,13 @@ export const Navbar: React.FC<NavbarProps> = ({
         
         {/* App Branding */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-[#FF5200]/30 transition-transform hover:scale-105 overflow-hidden bg-slate-900 border border-slate-200/60 dark:border-zinc-800 shrink-0">
-            <img src={`/logo.png?v=${Date.now()}`} alt="Fuel Sens" className="w-full h-full object-cover" referrerPolicy="no-referrer" onError={(e) => { e.currentTarget.style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'block'; }} />
-            <Fuel className="w-5 h-5 stroke-[2.5] text-[#FF5200]" style={{ display: 'none' }} />
+          <div className="w-10 h-10 rounded-2xl bg-[#FF5200] flex items-center justify-center text-white shadow-lg shadow-[#FF5200]/30 transition-transform hover:scale-105">
+            <Fuel className="w-5 h-5 stroke-[2.5]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <span className="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white">
-                Fuel<span className="text-[#FF5200]">Sens</span>
+                Fuel<span className="text-[#FF5200]">Flow</span>
               </span>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium">{t.appSubtitle}</p>
@@ -69,19 +68,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right Section Actions & 3-Dot Overflow Menu */}
         <div className="flex items-center gap-2">
-
-          {/* Prominent Direct Install App Button */}
-          {onInstallApp && canInstall && (
-            <button
-              onClick={onInstallApp}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-white bg-[#FF5200] hover:bg-[#E04800] shadow-md shadow-[#FF5200]/20 transition active:scale-95"
-              title="Install Fuel Sens as App"
-            >
-              <Download className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span className="hidden sm:inline">{t.installApp || 'Install App'}</span>
-              <span className="sm:hidden">{lang === 'bn' ? 'ইনস্টল' : 'Install'}</span>
-            </button>
-          )}
 
           {/* 3-Dot Overflow Menu */}
           <div className="relative" ref={menuRef}>
@@ -98,26 +84,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white dark:bg-[#121214] border border-slate-200 dark:border-zinc-800 shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
                 <div className="px-3 py-2 border-b border-slate-100 dark:border-zinc-800/60 mb-1">
                   <p className="text-xs font-bold text-slate-900 dark:text-white">
-                    {lang === 'bn' ? 'ফুয়েল সেন্স অপশনস' : 'Fuel Sens Options'}
+                    {lang === 'bn' ? 'ফুয়েল ফ্লো অপশনস' : 'Fuel Flow Options'}
                   </p>
                   <p className="text-[10px] text-slate-500 dark:text-zinc-400">
                     {user ? user.email : (lang === 'bn' ? 'লগইন করা নেই' : 'Not Logged In')}
                   </p>
                 </div>
-
-                {/* Install App Button */}
-                {onInstallApp && canInstall && (
-                  <button
-                    onClick={() => {
-                      setShowMenu(false);
-                      onInstallApp();
-                    }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-white bg-[#FF5200] hover:bg-[#E04800] shadow-sm transition mb-1"
-                  >
-                    <Download className="w-4 h-4" />
-                    <span>{t.installApp || 'Install App'}</span>
-                  </button>
-                )}
 
                 {/* Force Cloud Sync Button in Menu */}
                 {onManualSync && (

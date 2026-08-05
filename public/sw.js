@@ -1,11 +1,8 @@
-const CACHE_NAME = 'fuelflow-cache-v17';
+const CACHE_NAME = 'fuelflow-cache-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
-  '/manifest.json',
-  '/pwa-192.png',
-  '/pwa-512.png',
-  '/logo.png'
+  '/manifest.json'
 ];
 
 self.addEventListener('install', (event) => {
@@ -56,7 +53,7 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       const fetchPromise = fetch(event.request).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200) {
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseToCache);
