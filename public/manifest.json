@@ -1,27 +1,28 @@
 {
+  "id": "/",
   "short_name": "Fuel Sens",
   "name": "Fuel Sens - Fuel & Maintenance",
   "icons": [
     {
-      "src": "/pwa-192.png",
+      "src": "pwa-192.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any"
     },
     {
-      "src": "/pwa-192.png",
+      "src": "pwa-192.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "maskable"
     },
     {
-      "src": "/pwa-512.png",
+      "src": "pwa-512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any"
     },
     {
-      "src": "/pwa-512.png",
+      "src": "pwa-512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
