@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Fuel, Sun, Moon, MoreVertical, Calculator, User as UserIcon, LogOut, Download, Globe, Cloud, RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
+import { CarFront, Sun, Moon, MoreVertical, Calculator, User as UserIcon, LogOut, Globe, RefreshCw } from 'lucide-react';
 import { User } from '../types';
 import { Language, translations } from '../lib/translations';
 
@@ -54,7 +54,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* App Branding */}
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-[#FF5200] flex items-center justify-center text-white shadow-lg shadow-[#FF5200]/30 transition-transform hover:scale-105">
-            <Fuel className="w-5 h-5 stroke-[2.5]" />
+            <CarFront className="w-5 h-5 stroke-[2.5]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
