@@ -336,7 +336,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {t.developerCredit}
         </p>
         <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-1">
-          Fuel Flow © 2026 • Bike Fuel & Service Tracker
+          Fuel Sens © 2026 • Bike Fuel & Service Tracker
         </p>
       </footer>
 
@@ -375,7 +375,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <p className="text-[11px] opacity-90 mt-0.5 leading-relaxed">
                   {lang === 'bn'
                     ? 'অ্যাপটি সর্বশেষ সার্ভিসিং এর সাথে স্ট্যান্ডার্ড ৫,০০০ কিমি যোগ করে পরবর্তী টার্গেট দেয়। আপনি আপনার প্রয়োজন অনুযায়ী নতুন টার্গেট কিমি সেট করতে পারেন।'
-                    : 'Fuel Flow automatically adds 5,000 KM to your last recorded maintenance odometer. You can adjust this target anytime based on your bike manufacturer\'s schedule.'}
+                    : 'Fuel Sens automatically adds 5,000 KM to your last recorded maintenance odometer. You can adjust this target anytime based on your bike manufacturer\'s schedule.'}
                 </p>
               </div>
             </div>
@@ -478,7 +478,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <p className="text-[11px] opacity-90 mt-0.5 leading-relaxed">
                   {lang === 'bn'
                     ? 'আপনার বাইকের ড্যাশবোর্ডের আসল ওডোমিটার কিমি বসান। এর সাথে মিলিয়ে অ্যাপ পরবর্তী সার্ভিস রিমাইন্ডার হিসাব করবে।'
-                    : 'Enter the exact odometer reading from your bike\'s display. Fuel Flow will use this to accurately estimate remaining KM until your next service.'}
+                    : 'Enter the exact odometer reading from your bike\'s display. Fuel Sens will use this to accurately estimate remaining KM until your next service.'}
                 </p>
               </div>
             </div>

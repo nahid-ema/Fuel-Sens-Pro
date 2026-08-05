@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Download, Smartphone, Monitor, CheckCircle, ExternalLink } from 'lucide-react';
+import { X, Download, Smartphone, Monitor, AlertCircle, ExternalLink } from 'lucide-react';
 
 interface PwaInstallModalProps {
   isOpen: boolean;
@@ -15,6 +15,9 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({
   hasNativePrompt
 }) => {
   if (!isOpen) return null;
+
+  // Detect if inside an iframe
+  const isIframe = window.self !== window.top;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
@@ -34,14 +37,38 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({
             <Download className="w-6 h-6 stroke-[2.5]" />
           </div>
           <div>
-            <h2 className="text-lg font-extrabold tracking-tight">Install Fuel Flow</h2>
-            <p className="text-xs text-slate-500 dark:text-zinc-400">Chrome Progressive Web Application (PWA)</p>
+            <h2 className="text-lg font-extrabold tracking-tight">Install Fuel Sens</h2>
+            <p className="text-xs text-slate-500 dark:text-zinc-400">Progressive Web Application (PWA)</p>
           </div>
         </div>
 
         <p className="text-xs text-slate-600 dark:text-zinc-300 mb-5 leading-relaxed">
-          Install Fuel Flow directly on your desktop or phone to use it like a native app with offline access, quick launch from home screen, and fast performance.
+          Install Fuel Sens directly on your mobile device or computer to run it as a standalone app with offline support, full screen mode, and fast access from your home screen.
         </p>
+
+        {/* Notice for iframe / AI Studio preview */}
+        {isIframe && (
+          <div className="mb-5 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-800 dark:text-amber-300">
+            <div className="flex items-start gap-2 mb-2">
+              <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+              <div className="font-bold">
+                App Installation Notice:
+              </div>
+            </div>
+            <p className="text-[11px] leading-relaxed mb-3">
+              Browsers block standalone app installation inside embedded preview windows (iframes). To install <strong>Fuel Sens</strong> as a standalone app on your device, open it directly in a browser tab first.
+            </p>
+            <a
+              href={window.location.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-2.5 px-3 rounded-xl bg-[#FF5200] hover:bg-[#E04800] text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-2"
+            >
+              <span>Open in Direct Browser Tab</span>
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          </div>
+        )}
 
         {/* Action Button if Native Prompt Available */}
         {hasNativePrompt && (
@@ -53,56 +80,52 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({
             className="w-full mb-5 py-3 rounded-2xl bg-[#FF5200] hover:bg-[#E04800] text-white font-bold text-xs tracking-wide shadow-lg shadow-[#FF5200]/30 transition flex items-center justify-center gap-2"
           >
             <Download className="w-4 h-4" />
-            <span>Click to Install Instantly</span>
+            <span>Install App Now</span>
           </button>
         )}
 
         {/* Step-by-Step Instructions */}
-        <div className="space-y-4 text-xs">
+        <div className="space-y-3.5 text-xs">
           
-          {/* Desktop Chrome Instructions */}
+          {/* Mobile Chrome Instructions */}
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-900/80 border border-slate-200/80 dark:border-zinc-800">
+            <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white mb-2">
+              <Smartphone className="w-4 h-4 text-[#FF5200]" />
+              <span>Android Chrome / Mobile Browsers:</span>
+            </div>
+            <ol className="list-decimal list-inside space-y-1.5 text-slate-600 dark:text-zinc-400 text-[11px] leading-normal">
+              <li>Open the app URL directly in Google Chrome.</li>
+              <li>Tap the <strong className="text-slate-800 dark:text-zinc-200">three dots (⋮)</strong> in top right.</li>
+              <li>Select <strong className="text-[#FF5200]">"Install app"</strong> or <strong className="text-[#FF5200]">"Add to Home screen"</strong>.</li>
+              <li>Confirm install to get the full native app experience.</li>
+            </ol>
+          </div>
+
+          {/* iPhone Safari Instructions */}
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-900/80 border border-slate-200/80 dark:border-zinc-800">
+            <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white mb-2">
+              <Smartphone className="w-4 h-4 text-[#FF5200]" />
+              <span>iPhone / iOS Safari:</span>
+            </div>
+            <ol className="list-decimal list-inside space-y-1.5 text-slate-600 dark:text-zinc-400 text-[11px] leading-normal">
+              <li>Open the app link in Safari browser.</li>
+              <li>Tap the <strong className="text-[#FF5200]">Share button</strong> (square with arrow up).</li>
+              <li>Scroll down and tap <strong className="text-slate-800 dark:text-zinc-200">"Add to Home Screen"</strong>.</li>
+            </ol>
+          </div>
+
+          {/* Desktop Instructions */}
           <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-900/80 border border-slate-200/80 dark:border-zinc-800">
             <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white mb-2">
               <Monitor className="w-4 h-4 text-[#FF5200]" />
               <span>Google Chrome Desktop:</span>
             </div>
             <ol className="list-decimal list-inside space-y-1.5 text-slate-600 dark:text-zinc-400 text-[11px] leading-normal">
-              <li>Look at the right end of the Chrome address bar (URL bar).</li>
-              <li>Click the <strong className="text-slate-800 dark:text-zinc-200">Install icon</strong> (a monitor or plus symbol).</li>
-              <li>Or click Chrome Menu (<strong className="text-slate-800 dark:text-zinc-200">⋮</strong>) ➔ <strong className="text-slate-800 dark:text-zinc-200">Save and share</strong> ➔ <strong className="text-[#FF5200]">Install Fuel Flow</strong>.</li>
+              <li>Click the <strong className="text-slate-800 dark:text-zinc-200">Install icon</strong> in Chrome address bar.</li>
+              <li>Or click Chrome Menu (<strong className="text-slate-800 dark:text-zinc-200">⋮</strong>) ➔ <strong className="text-slate-800 dark:text-zinc-200">Save and share</strong> ➔ <strong className="text-[#FF5200]">Install Fuel Sens</strong>.</li>
             </ol>
           </div>
 
-          {/* Android / Mobile Chrome Instructions */}
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-900/80 border border-slate-200/80 dark:border-zinc-800">
-            <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white mb-2">
-              <Smartphone className="w-4 h-4 text-[#FF5200]" />
-              <span>Mobile Chrome (Android / iOS):</span>
-            </div>
-            <ol className="list-decimal list-inside space-y-1.5 text-slate-600 dark:text-zinc-400 text-[11px] leading-normal">
-              <li>Tap the <strong className="text-slate-800 dark:text-zinc-200">three dots menu (⋮)</strong> in top right corner.</li>
-              <li>Select <strong className="text-[#FF5200]">"Add to Home screen"</strong> or <strong className="text-[#FF5200]">"Install app"</strong>.</li>
-              <li>Confirm and Fuel Flow will appear on your home screen!</li>
-            </ol>
-          </div>
-
-        </div>
-
-        {/* Open in New Tab prompt if inside preview iframe */}
-        <div className="mt-5 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-300 flex items-start gap-2">
-          <CheckCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-          <div>
-            <strong>Tip for AI Studio Preview:</strong> Chrome PWA installation works best when you open the app in a standalone tab.
-            <a
-              href={window.location.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-1 font-bold text-[#FF5200] hover:underline flex items-center gap-1"
-            >
-              <span>Open App in New Tab</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
-          </div>
         </div>
 
         {/* Close Modal Button */}
@@ -117,3 +140,4 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({
     </div>
   );
 };
+

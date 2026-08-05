@@ -2,27 +2,28 @@
   "id": "/",
   "short_name": "Fuel Sens",
   "name": "Fuel Sens - Fuel & Maintenance",
+  "description": "Track vehicle fuel efficiency, fuel logs, and maintenance services in real-time.",
   "icons": [
     {
-      "src": "pwa-192.png",
+      "src": "/pwa-192.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any"
     },
     {
-      "src": "pwa-192.png",
+      "src": "/pwa-192.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "maskable"
     },
     {
-      "src": "pwa-512.png",
+      "src": "/pwa-512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any"
     },
     {
-      "src": "pwa-512.png",
+      "src": "/pwa-512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
@@ -34,5 +35,6 @@
   "theme_color": "#FF5200",
   "display": "standalone",
   "orientation": "portrait",
-  "description": "Track vehicle fuel efficiency, fuel logs, and maintenance services in real-time."
+  "prefer_related_applications": false,
+  "categories": ["utilities", "productivity"]
 }
