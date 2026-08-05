@@ -85,12 +85,26 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white dark:bg-[#121214] border border-slate-200 dark:border-zinc-800 shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
                 <div className="px-3 py-2 border-b border-slate-100 dark:border-zinc-800/60 mb-1">
                   <p className="text-xs font-bold text-slate-900 dark:text-white">
-                    {lang === 'bn' ? 'ফুয়েল ফ্লো অপশনস' : 'Fuel Flow Options'}
+                    {lang === 'bn' ? 'ফুয়েল সেন্স অপশনস' : 'Fuel Sens Options'}
                   </p>
                   <p className="text-[10px] text-slate-500 dark:text-zinc-400">
                     {user ? user.email : (lang === 'bn' ? 'লগইন করা নেই' : 'Not Logged In')}
                   </p>
                 </div>
+
+                {/* Install App Button */}
+                {onInstallApp && canInstall && (
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      onInstallApp();
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-white bg-[#FF5200] hover:bg-[#E04800] shadow-sm transition mb-1"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>{t.installApp || 'Install App'}</span>
+                  </button>
+                )}
 
                 {/* Force Cloud Sync Button in Menu */}
                 {onManualSync && (
