@@ -70,6 +70,19 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Right Section Actions & 3-Dot Overflow Menu */}
         <div className="flex items-center gap-2">
 
+          {/* Prominent Direct Install App Button */}
+          {onInstallApp && canInstall && (
+            <button
+              onClick={onInstallApp}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-white bg-[#FF5200] hover:bg-[#E04800] shadow-md shadow-[#FF5200]/20 transition active:scale-95"
+              title="Install Fuel Sens as App"
+            >
+              <Download className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span className="hidden sm:inline">{t.installApp || 'Install App'}</span>
+              <span className="sm:hidden">{lang === 'bn' ? 'ইনস্টল' : 'Install'}</span>
+            </button>
+          )}
+
           {/* 3-Dot Overflow Menu */}
           <div className="relative" ref={menuRef}>
             <button

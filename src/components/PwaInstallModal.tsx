@@ -1,5 +1,5 @@
-import React from 'react';
-import { X, Download, Smartphone, Monitor, AlertCircle, ExternalLink } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Download, Smartphone, Monitor, AlertCircle, ExternalLink, Copy, Check } from 'lucide-react';
 
 interface PwaInstallModalProps {
   isOpen: boolean;
@@ -14,10 +14,18 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({
   onTriggerInstall,
   hasNativePrompt
 }) => {
+  const [copied, setCopied] = useState(false);
+
   if (!isOpen) return null;
 
   // Detect if inside an iframe
   const isIframe = window.self !== window.top;
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
@@ -37,36 +45,45 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({
             <Download className="w-6 h-6 stroke-[2.5]" />
           </div>
           <div>
-            <h2 className="text-lg font-extrabold tracking-tight">Install Fuel Sens</h2>
-            <p className="text-xs text-slate-500 dark:text-zinc-400">Progressive Web Application (PWA)</p>
+            <h2 className="text-lg font-extrabold tracking-tight">Install Fuel Sens App</h2>
+            <p className="text-xs text-slate-500 dark:text-zinc-400">Standalone Web App (PWA)</p>
           </div>
         </div>
 
-        <p className="text-xs text-slate-600 dark:text-zinc-300 mb-5 leading-relaxed">
-          Install Fuel Sens directly on your mobile device or computer to run it as a standalone app with offline support, full screen mode, and fast access from your home screen.
+        <p className="text-xs text-slate-600 dark:text-zinc-300 mb-4 leading-relaxed">
+          Install <strong>Fuel Sens</strong> directly on your mobile home screen to run it as a fast, full-screen native app with offline access and instant loading.
         </p>
 
         {/* Notice for iframe / AI Studio preview */}
         {isIframe && (
-          <div className="mb-5 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-800 dark:text-amber-300">
+          <div className="mb-5 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-900 dark:text-amber-200">
             <div className="flex items-start gap-2 mb-2">
               <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
               <div className="font-bold">
-                App Installation Notice:
+                Preview Window Restriction:
               </div>
             </div>
-            <p className="text-[11px] leading-relaxed mb-3">
-              Browsers block standalone app installation inside embedded preview windows (iframes). To install <strong>Fuel Sens</strong> as a standalone app on your device, open it directly in a browser tab first.
+            <p className="text-[11px] leading-relaxed mb-3 text-slate-700 dark:text-zinc-300">
+              Web browsers block app installation inside embedded preview frames. To install <strong>Fuel Sens</strong> on your phone or PC, open the app link directly in a new browser tab.
             </p>
-            <a
-              href={window.location.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-2.5 px-3 rounded-xl bg-[#FF5200] hover:bg-[#E04800] text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-2"
-            >
-              <span>Open in Direct Browser Tab</span>
-              <ExternalLink className="w-4 h-4" />
-            </a>
+            <div className="grid grid-cols-2 gap-2">
+              <a
+                href={window.location.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-2.5 px-3 rounded-xl bg-[#FF5200] hover:bg-[#E04800] text-white font-bold text-[11px] shadow-md transition flex items-center justify-center gap-1.5"
+              >
+                <span>Open in Tab</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+              <button
+                onClick={handleCopyLink}
+                className="py-2.5 px-3 rounded-xl bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 font-bold text-[11px] transition flex items-center justify-center gap-1.5"
+              >
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copied ? 'Link Copied!' : 'Copy Link'}</span>
+              </button>
+            </div>
           </div>
         )}
 
@@ -80,24 +97,24 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({
             className="w-full mb-5 py-3 rounded-2xl bg-[#FF5200] hover:bg-[#E04800] text-white font-bold text-xs tracking-wide shadow-lg shadow-[#FF5200]/30 transition flex items-center justify-center gap-2"
           >
             <Download className="w-4 h-4" />
-            <span>Install App Now</span>
+            <span>Click to Install App Instantly</span>
           </button>
         )}
 
         {/* Step-by-Step Instructions */}
         <div className="space-y-3.5 text-xs">
           
-          {/* Mobile Chrome Instructions */}
+          {/* Android Chrome Instructions */}
           <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-900/80 border border-slate-200/80 dark:border-zinc-800">
             <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white mb-2">
               <Smartphone className="w-4 h-4 text-[#FF5200]" />
-              <span>Android Chrome / Mobile Browsers:</span>
+              <span>Android (Google Chrome / Mobile Browser):</span>
             </div>
             <ol className="list-decimal list-inside space-y-1.5 text-slate-600 dark:text-zinc-400 text-[11px] leading-normal">
-              <li>Open the app URL directly in Google Chrome.</li>
-              <li>Tap the <strong className="text-slate-800 dark:text-zinc-200">three dots (⋮)</strong> in top right.</li>
-              <li>Select <strong className="text-[#FF5200]">"Install app"</strong> or <strong className="text-[#FF5200]">"Add to Home screen"</strong>.</li>
-              <li>Confirm install to get the full native app experience.</li>
+              <li>Open the link in Google Chrome on your phone.</li>
+              <li>Tap the <strong className="text-slate-900 dark:text-zinc-100">Three Dots Menu (⋮)</strong> in top right.</li>
+              <li>Tap <strong className="text-[#FF5200]">"Install app"</strong> or <strong className="text-[#FF5200]">"Add to Home screen"</strong>.</li>
+              <li>Fuel Sens will now appear on your phone home screen like a native app!</li>
             </ol>
           </div>
 
@@ -105,12 +122,13 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({
           <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-900/80 border border-slate-200/80 dark:border-zinc-800">
             <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white mb-2">
               <Smartphone className="w-4 h-4 text-[#FF5200]" />
-              <span>iPhone / iOS Safari:</span>
+              <span>iPhone / iPad (iOS Safari):</span>
             </div>
             <ol className="list-decimal list-inside space-y-1.5 text-slate-600 dark:text-zinc-400 text-[11px] leading-normal">
-              <li>Open the app link in Safari browser.</li>
-              <li>Tap the <strong className="text-[#FF5200]">Share button</strong> (square with arrow up).</li>
-              <li>Scroll down and tap <strong className="text-slate-800 dark:text-zinc-200">"Add to Home Screen"</strong>.</li>
+              <li>Open the app URL in Safari browser.</li>
+              <li>Tap the <strong className="text-[#FF5200]">Share button</strong> (square with arrow pointing up).</li>
+              <li>Scroll down and tap <strong className="text-slate-900 dark:text-zinc-100">"Add to Home Screen"</strong>.</li>
+              <li>Tap <strong className="text-[#FF5200]">"Add"</strong> in top right.</li>
             </ol>
           </div>
 
@@ -118,15 +136,31 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({
           <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-900/80 border border-slate-200/80 dark:border-zinc-800">
             <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white mb-2">
               <Monitor className="w-4 h-4 text-[#FF5200]" />
-              <span>Google Chrome Desktop:</span>
+              <span>Desktop PC (Chrome / Edge / Brave):</span>
             </div>
             <ol className="list-decimal list-inside space-y-1.5 text-slate-600 dark:text-zinc-400 text-[11px] leading-normal">
-              <li>Click the <strong className="text-slate-800 dark:text-zinc-200">Install icon</strong> in Chrome address bar.</li>
-              <li>Or click Chrome Menu (<strong className="text-slate-800 dark:text-zinc-200">⋮</strong>) ➔ <strong className="text-slate-800 dark:text-zinc-200">Save and share</strong> ➔ <strong className="text-[#FF5200]">Install Fuel Sens</strong>.</li>
+              <li>Click the <strong className="text-slate-900 dark:text-zinc-100">Install icon (⊕)</strong> at the right side of address bar.</li>
+              <li>Or click Chrome Menu (<strong className="text-slate-900 dark:text-zinc-100">⋮</strong>) ➔ <strong className="text-slate-900 dark:text-zinc-100">Save and share</strong> ➔ <strong className="text-[#FF5200]">Install Fuel Sens</strong>.</li>
             </ol>
           </div>
 
         </div>
+
+        {/* Copy Link helper if not in iframe */}
+        {!isIframe && (
+          <div className="mt-4 flex items-center justify-between p-3 rounded-2xl bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs">
+            <span className="text-[11px] text-slate-500 dark:text-zinc-400 truncate max-w-[200px]">
+              {window.location.href}
+            </span>
+            <button
+              onClick={handleCopyLink}
+              className="py-1.5 px-3 rounded-xl bg-[#FF5200] hover:bg-[#E04800] text-white font-bold text-[11px] transition flex items-center gap-1 shrink-0"
+            >
+              {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              <span>{copied ? 'Copied' : 'Copy Link'}</span>
+            </button>
+          </div>
+        )}
 
         {/* Close Modal Button */}
         <button
@@ -140,4 +174,5 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({
     </div>
   );
 };
+
 
