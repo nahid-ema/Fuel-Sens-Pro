@@ -1,10 +1,11 @@
-const CACHE_NAME = 'fuelflow-cache-v6';
+const CACHE_NAME = 'fuelflow-cache-v12';
 const ASSETS_TO_CACHE = [
   '/',
-  '/index.html',
-  '/manifest.json',
-  '/pwa-192.png',
-  '/pwa-512.png'
+  '/index.html?v=12',
+  '/manifest.json?v=12',
+  '/pwa-192.png?v=12',
+  '/pwa-512.png?v=12',
+  '/logo.png?v=12'
 ];
 
 self.addEventListener('install', (event) => {

@@ -53,9 +53,9 @@ export const Navbar: React.FC<NavbarProps> = ({
         
         {/* App Branding */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-[#FF5200]/30 transition-transform hover:scale-105 overflow-hidden bg-[#FF5200]">
-            <img src="/logo.png" alt="Fuel Sens" className="w-full h-full object-cover bg-white" onError={(e) => { e.currentTarget.style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'block'; }} />
-            <Fuel className="w-5 h-5 stroke-[2.5]" style={{ display: 'none' }} />
+          <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-[#FF5200]/30 transition-transform hover:scale-105 overflow-hidden bg-slate-900 border border-slate-200/60 dark:border-zinc-800 shrink-0">
+            <img src={`/logo.png?v=${Date.now()}`} alt="Fuel Sens" className="w-full h-full object-cover" referrerPolicy="no-referrer" onError={(e) => { e.currentTarget.style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'block'; }} />
+            <Fuel className="w-5 h-5 stroke-[2.5] text-[#FF5200]" style={{ display: 'none' }} />
           </div>
           <div>
             <div className="flex items-center gap-2">

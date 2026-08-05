@@ -41,8 +41,8 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({
 
         {/* Modal Header */}
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-2xl bg-[#FF5200] flex items-center justify-center text-white shadow-lg shadow-[#FF5200]/30">
-            <Download className="w-6 h-6 stroke-[2.5]" />
+          <div className="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-200 dark:border-zinc-800 flex items-center justify-center text-white shadow-lg shadow-[#FF5200]/30 overflow-hidden shrink-0">
+            <img src={`/logo.png?v=${Date.now()}`} alt="Fuel Sens" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
           </div>
           <div>
             <h2 className="text-lg font-extrabold tracking-tight">Install Fuel Sens App</h2>
