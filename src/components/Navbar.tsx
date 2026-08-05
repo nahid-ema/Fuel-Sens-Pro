@@ -53,13 +53,14 @@ export const Navbar: React.FC<NavbarProps> = ({
         
         {/* App Branding */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-[#FF5200] flex items-center justify-center text-white shadow-lg shadow-[#FF5200]/30 transition-transform hover:scale-105">
-            <Fuel className="w-5 h-5 stroke-[2.5]" />
+          <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-[#FF5200]/30 transition-transform hover:scale-105 overflow-hidden bg-[#FF5200]">
+            <img src="/logo.png" alt="Fuel Sens" className="w-full h-full object-cover bg-white" onError={(e) => { e.currentTarget.style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'block'; }} />
+            <Fuel className="w-5 h-5 stroke-[2.5]" style={{ display: 'none' }} />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <span className="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white">
-                Fuel<span className="text-[#FF5200]">Flow</span>
+                Fuel<span className="text-[#FF5200]">Sens</span>
               </span>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium">{t.appSubtitle}</p>
@@ -104,17 +105,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <span>{t.forceSync}</span>
                   </button>
                 )}
-
-                <button
-                  onClick={() => {
-                    setShowMenu(false);
-                    if (onInstallApp) onInstallApp();
-                  }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-white bg-[#FF5200] hover:bg-[#E04800] shadow-sm transition mb-1"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>{t.installApp}</span>
-                </button>
 
                 <button
                   onClick={() => {
