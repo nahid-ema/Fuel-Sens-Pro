@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { CarFront, Sun, Moon, MoreVertical, Calculator, User as UserIcon, LogOut, Globe, RefreshCw } from 'lucide-react';
 import { User } from '../types';
 import { Language, translations } from '../lib/translations';
@@ -71,6 +72,17 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right Section Actions & 3-Dot Overflow Menu */}
         <div className="flex items-center gap-2">
+
+          {/* Top Calculator Button */}
+          <motion.button
+            whileTap={{ scale: 0.94 }}
+            onClick={onOpenTripCalculator}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-[#FF5200] hover:bg-[#e04800] text-white text-xs font-bold shadow-md shadow-[#FF5200]/25 transition-colors"
+            title={t.calculator}
+          >
+            <Calculator className="w-4 h-4" />
+            <span className="text-xs font-bold">{t.calculator}</span>
+          </motion.button>
 
           {/* 3-Dot Overflow Menu */}
           <div className="relative" ref={menuRef}>

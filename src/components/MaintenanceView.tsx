@@ -5,6 +5,7 @@ import {
   Wrench,
   Plus,
   Trash2,
+  Pencil,
   Calendar,
   Gauge,
   Tag,
@@ -17,6 +18,7 @@ interface MaintenanceViewProps {
   logs: MaintenanceLog[];
   onOpenAddMaintenance: () => void;
   onDeleteLog: (id: string) => void;
+  onEditLog?: (log: MaintenanceLog) => void;
   lang: Language;
 }
 
@@ -24,6 +26,7 @@ export const MaintenanceView: React.FC<MaintenanceViewProps> = ({
   logs,
   onOpenAddMaintenance,
   onDeleteLog,
+  onEditLog,
   lang
 }) => {
   const t = translations[lang];
@@ -161,9 +164,9 @@ export const MaintenanceView: React.FC<MaintenanceViewProps> = ({
                   </span>
                   <p className="text-[10px] text-slate-400 font-semibold uppercase">BDT</p>
 
-                  <div className="mt-3">
+                  <div className="mt-3 flex items-center justify-end gap-1">
                     {deletingId === log.id ? (
-                      <div className="flex items-center justify-end gap-1">
+                      <>
                         <button
                           onClick={() => onDeleteLog(log.id)}
                           className="px-2 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-bold"
@@ -176,15 +179,26 @@ export const MaintenanceView: React.FC<MaintenanceViewProps> = ({
                         >
                           Cancel
                         </button>
-                      </div>
+                      </>
                     ) : (
-                      <button
-                        onClick={() => setDeletingId(log.id)}
-                        className="p-1.5 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition"
-                        title="Delete maintenance entry"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <>
+                        {onEditLog && (
+                          <button
+                            onClick={() => onEditLog(log)}
+                            className="p-1.5 rounded-full text-slate-400 hover:text-[#FF5200] hover:bg-[#FF5200]/10 transition"
+                            title="Edit maintenance log"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setDeletingId(log.id)}
+                          className="p-1.5 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition"
+                          title="Delete maintenance entry"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>

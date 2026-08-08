@@ -5,6 +5,7 @@ import {
   Fuel,
   Plus,
   Trash2,
+  Pencil,
   Flame,
   Search,
   Calendar,
@@ -17,6 +18,7 @@ interface FuelViewProps {
   logs: FuelLog[];
   onOpenAddFuel: () => void;
   onDeleteLog: (id: string) => void;
+  onEditLog?: (log: FuelLog) => void;
   lang: Language;
 }
 
@@ -24,6 +26,7 @@ export const FuelView: React.FC<FuelViewProps> = ({
   logs,
   onOpenAddFuel,
   onDeleteLog,
+  onEditLog,
   lang
 }) => {
   const t = translations[lang];
@@ -118,13 +121,24 @@ export const FuelView: React.FC<FuelViewProps> = ({
                       </button>
                     </div>
                   ) : (
-                    <button
-                      onClick={() => setDeletingId(log.id)}
-                      className="p-1.5 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition"
-                      title="Delete fuel log"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      {onEditLog && (
+                        <button
+                          onClick={() => onEditLog(log)}
+                          className="p-1.5 rounded-full text-slate-400 hover:text-[#FF5200] hover:bg-[#FF5200]/10 transition"
+                          title="Edit fuel log"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setDeletingId(log.id)}
+                        className="p-1.5 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition"
+                        title="Delete fuel log"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { X, Wrench, Calendar, Gauge, DollarSign, FileText, Tag } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { X, Wrench } from 'lucide-react';
 import { MaintenanceLog } from '../types';
 import { Language, translations } from '../lib/translations';
 
@@ -7,6 +8,8 @@ interface AddMaintenanceModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddLog: (log: Omit<MaintenanceLog, 'id'>) => void;
+  onEditLog?: (log: MaintenanceLog) => void;
+  editItem?: MaintenanceLog | null;
   latestOdometer?: number;
   lang?: Language;
 }
@@ -15,6 +18,8 @@ export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
   isOpen,
   onClose,
   onAddLog,
+  onEditLog,
+  editItem,
   latestOdometer = 0,
   lang = 'en'
 }) => {
@@ -37,7 +42,23 @@ export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
     'Other'
   ];
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (editItem && isOpen) {
+      setServiceTitle(editItem.serviceTitle);
+      setCategory(editItem.category || 'General Service');
+      setTotalCost(editItem.totalCost.toString());
+      setOdometerKm(editItem.odometerKm.toString());
+      setDate(editItem.date);
+      setNotes(editItem.notes || '');
+    } else if (isOpen) {
+      setServiceTitle('');
+      setCategory('Master Service');
+      setTotalCost('');
+      setOdometerKm(latestOdometer > 0 ? latestOdometer.toString() : '');
+      setDate(new Date().toISOString().split('T')[0]);
+      setNotes('');
+    }
+  }, [isOpen, editItem, latestOdometer]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,21 +78,35 @@ export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
       return;
     }
 
-    onAddLog({
+    const payload = {
       serviceTitle: serviceTitle.trim(),
       category,
       totalCost: cost,
       odometerKm: odo,
       date: date || new Date().toISOString().split('T')[0],
       notes: notes.trim() || undefined
-    });
+    };
+
+    if (editItem && onEditLog) {
+      onEditLog({ ...payload, id: editItem.id, userId: editItem.userId });
+    } else {
+      onAddLog(payload);
+    }
 
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg m3-card bg-white dark:bg-[#121214] p-6 shadow-2xl border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white max-h-[90vh] overflow-y-auto">
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+            className="relative w-full max-w-lg m3-card bg-white dark:bg-[#121214] p-6 shadow-2xl border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white max-h-[90vh] overflow-y-auto"
+          >
         
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800/80 pb-4 mb-5">
@@ -80,8 +115,8 @@ export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
               <Wrench className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-black tracking-tight">{t.addMaintTitle}</h3>
-              <p className="text-xs text-slate-500 dark:text-zinc-400">{t.addMaintDesc}</p>
+              <h3 className="text-lg font-black tracking-tight">{editItem ? 'Edit Maintenance Log' : t.addMaintTitle}</h3>
+              <p className="text-xs text-slate-500 dark:text-zinc-400">{editItem ? 'Update your service record.' : t.addMaintDesc}</p>
             </div>
           </div>
 
@@ -209,7 +244,9 @@ export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
 
         </form>
 
-      </div>
-    </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 };

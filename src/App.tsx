@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { FuelLog, MaintenanceLog, User, TabType } from './types';
 import { INITIAL_FUEL_LOGS, INITIAL_MAINTENANCE_LOGS } from './data/initialData';
 import { Language } from './lib/translations';
@@ -81,6 +82,10 @@ export default function App() {
   // Cloud Sync Status & Notification Toasts
   const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('synced');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Edit states
+  const [editFuelItem, setEditFuelItem] = useState<FuelLog | null>(null);
+  const [editMaintenanceItem, setEditMaintenanceItem] = useState<MaintenanceLog | null>(null);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -441,6 +446,25 @@ export default function App() {
     }
   };
 
+  const handleEditFuelLog = async (updatedLog: FuelLog) => {
+    setFuelLogs((prev) => prev.map((log) => (log.id === updatedLog.id ? updatedLog : log)));
+    setSyncStatus('syncing');
+    setEditFuelItem(null);
+
+    try {
+      const payload = sanitizeForFirestore({
+        ...updatedLog,
+        updatedAt: serverTimestamp()
+      });
+      await setDoc(doc(db, 'fuelLogs', updatedLog.id), payload, { merge: true });
+      setSyncStatus('synced');
+      showToast(lang === 'bn' ? 'ফুয়েল লগ অনলাইনে আপডেট হয়েছে!' : 'Fuel log updated in Cloud!');
+    } catch (err) {
+      console.error('Firestore update fuel log error:', err);
+      setSyncStatus('error');
+    }
+  };
+
   const handleDeleteFuelLog = async (id: string) => {
     setFuelLogs((prev) => prev.filter((log) => log.id !== id));
     setSyncStatus('syncing');
@@ -478,6 +502,25 @@ export default function App() {
       showToast(lang === 'bn' ? 'সার্ভিস লগ অনলাইনে সেভ হয়েছে!' : 'Service log saved to Cloud!');
     } catch (err) {
       console.error('Firestore save maintenance log error:', err);
+      setSyncStatus('error');
+    }
+  };
+
+  const handleEditMaintenanceLog = async (updatedLog: MaintenanceLog) => {
+    setMaintenanceLogs((prev) => prev.map((log) => (log.id === updatedLog.id ? updatedLog : log)));
+    setSyncStatus('syncing');
+    setEditMaintenanceItem(null);
+
+    try {
+      const payload = sanitizeForFirestore({
+        ...updatedLog,
+        updatedAt: serverTimestamp()
+      });
+      await setDoc(doc(db, 'maintenanceLogs', updatedLog.id), payload, { merge: true });
+      setSyncStatus('synced');
+      showToast(lang === 'bn' ? 'সার্ভিস লগ অনলাইনে আপডেট হয়েছে!' : 'Service log updated in Cloud!');
+    } catch (err) {
+      console.error('Firestore update maintenance log error:', err);
       setSyncStatus('error');
     }
   };
@@ -709,49 +752,95 @@ export default function App() {
       )}
 
       {/* Floating Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-20 right-4 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <div className="flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-slate-900 dark:bg-zinc-800 text-white text-xs font-bold shadow-2xl border border-slate-700 dark:border-zinc-700">
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="fixed bottom-20 right-4 z-50 px-4 py-3 rounded-2xl bg-slate-900/95 dark:bg-zinc-800/95 text-white text-xs font-bold shadow-2xl border border-slate-700/80 dark:border-zinc-700/80 flex items-center gap-2.5 backdrop-blur-md"
+          >
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>{toastMessage}</span>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Screen Content */}
       <main className="max-w-4xl mx-auto px-4 pt-6">
-        {activeTab === 'dashboard' && (
-          <DashboardView
-            fuelLogs={fuelLogs}
-            maintenanceLogs={maintenanceLogs}
-            onChangeTab={(tab) => setActiveTab(tab)}
-            onOpenAddFuel={() => setShowAddFuelModal(true)}
-            onOpenAddMaintenance={() => setShowAddMaintenanceModal(true)}
-            lang={lang}
-            customServiceTarget={customServiceTarget}
-            customCurrentOdometer={customCurrentOdometer}
-            onSaveCustomTarget={handleSaveCustomTarget}
-            onSaveCustomOdometer={handleSaveCustomOdometer}
-          />
-        )}
+        <AnimatePresence mode="wait">
+          {activeTab === 'dashboard' && (
+            <motion.div
+              key="dashboard"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+            >
+              <DashboardView
+                fuelLogs={fuelLogs}
+                maintenanceLogs={maintenanceLogs}
+                onChangeTab={(tab) => setActiveTab(tab)}
+                onOpenAddFuel={() => setShowAddFuelModal(true)}
+                onOpenAddMaintenance={() => setShowAddMaintenanceModal(true)}
+                lang={lang}
+                customServiceTarget={customServiceTarget}
+                customCurrentOdometer={customCurrentOdometer}
+                onSaveCustomTarget={handleSaveCustomTarget}
+                onSaveCustomOdometer={handleSaveCustomOdometer}
+              />
+            </motion.div>
+          )}
 
-        {activeTab === 'fuel' && (
-          <FuelView
-            logs={fuelLogs}
-            onOpenAddFuel={() => setShowAddFuelModal(true)}
-            onDeleteLog={handleDeleteFuelLog}
-            lang={lang}
-          />
-        )}
+          {activeTab === 'fuel' && (
+            <motion.div
+              key="fuel"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+            >
+              <FuelView
+                logs={fuelLogs}
+                onOpenAddFuel={() => {
+                  setEditFuelItem(null);
+                  setShowAddFuelModal(true);
+                }}
+                onDeleteLog={handleDeleteFuelLog}
+                onEditLog={(log) => {
+                  setEditFuelItem(log);
+                  setShowAddFuelModal(true);
+                }}
+                lang={lang}
+              />
+            </motion.div>
+          )}
 
-        {activeTab === 'maintenance' && (
-          <MaintenanceView
-            logs={maintenanceLogs}
-            onOpenAddMaintenance={() => setShowAddMaintenanceModal(true)}
-            onDeleteLog={handleDeleteMaintenanceLog}
-            lang={lang}
-          />
-        )}
+          {activeTab === 'maintenance' && (
+            <motion.div
+              key="maintenance"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+            >
+              <MaintenanceView
+                logs={maintenanceLogs}
+                onOpenAddMaintenance={() => {
+                  setEditMaintenanceItem(null);
+                  setShowAddMaintenanceModal(true);
+                }}
+                onDeleteLog={handleDeleteMaintenanceLog}
+                onEditLog={(log) => {
+                  setEditMaintenanceItem(log);
+                  setShowAddMaintenanceModal(true);
+                }}
+                lang={lang}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
       {/* Bottom Tab Bar Navigation */}
@@ -775,16 +864,26 @@ export default function App() {
 
       <AddFuelModal
         isOpen={showAddFuelModal}
-        onClose={() => setShowAddFuelModal(false)}
+        onClose={() => {
+          setShowAddFuelModal(false);
+          setEditFuelItem(null);
+        }}
         onAddLog={handleAddFuelLog}
+        onEditLog={handleEditFuelLog}
+        editItem={editFuelItem}
         latestOdometer={latestOdometer}
         lang={lang}
       />
 
       <AddMaintenanceModal
         isOpen={showAddMaintenanceModal}
-        onClose={() => setShowAddMaintenanceModal(false)}
+        onClose={() => {
+          setShowAddMaintenanceModal(false);
+          setEditMaintenanceItem(null);
+        }}
         onAddLog={handleAddMaintenanceLog}
+        onEditLog={handleEditMaintenanceLog}
+        editItem={editMaintenanceItem}
         latestOdometer={latestOdometer}
         lang={lang}
       />

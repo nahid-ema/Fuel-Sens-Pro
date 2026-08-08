@@ -1,85 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
-  <!-- Background with subtle rounded corners -->
-  <rect width="512" height="512" rx="112" fill="#F8FAFC" />
-
-  <g transform="translate(0, 10)">
-    <!-- Shield Outline & Background -->
-    <path d="M 256 60 
-             C 340 60, 390 85, 410 120 
-             C 410 240, 370 330, 256 420 
-             C 142 330, 102 240, 102 120 
-             C 122 85, 172 60, 256 60 Z" 
-          fill="#0F3854" 
-          stroke="#0F3854" 
-          stroke-width="12" 
-          stroke-linejoin="round"/>
-
-    <!-- Inner Shield Light Fill -->
-    <path d="M 256 80 
-             C 328 80, 372 102, 390 132 
-             C 390 236, 354 316, 256 396 
-             C 158 316, 122 236, 122 132 
-             C 140 102, 184 80, 256 80 Z" 
-          fill="#FFFFFF"/>
-
-    <!-- Chart Bars (In Shield Background) -->
-    <rect x="300" y="220" width="16" height="40" rx="4" fill="#CBD5E1" />
-    <rect x="326" y="190" width="16" height="70" rx="4" fill="#94A3B8" />
-    <rect x="352" y="160" width="16" height="100" rx="4" fill="#64748B" />
-
-    <!-- Fuel Pump Nozzle (Top Left inside shield) -->
-    <g transform="translate(145, 110)">
-      <!-- Hose -->
-      <path d="M 15 110 C 10 70, 30 40, 60 40 L 75 40" fill="none" stroke="#0F3854" stroke-width="14" stroke-linecap="round" />
-      <!-- Nozzle Body -->
-      <path d="M 70 25 L 110 25 L 120 45 L 80 50 Z" fill="#0F3854" />
-      <!-- Nozzle Handle / Trigger -->
-      <path d="M 85 50 L 85 70 L 105 70 L 105 48" fill="none" stroke="#0F3854" stroke-width="6" stroke-linejoin="round" />
-      <!-- Spout -->
-      <path d="M 120 30 L 145 20 L 150 35 L 138 42" fill="#0F3854" />
-      <!-- Fuel Drop -->
-      <path d="M 160 50 C 160 50, 172 68, 172 78 C 172 86, 166 92, 160 92 C 154 92, 148 86, 148 78 C 148 68, 160 50, 160 50 Z" fill="#FF5200" />
-    </g>
-
-    <!-- Rising Growth Arrow (Orange) -->
-    <path d="M 210 250 L 265 210 L 310 235 L 390 140" fill="none" stroke="#FF5200" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" />
-    <!-- Arrow Head -->
-    <path d="M 350 135 L 402 132 L 395 185 Z" fill="#FF5200" />
-
-    <!-- Sport Motorcycle (Center/Foreground) -->
-    <g transform="translate(130, 230)">
-      <!-- Rear Wheel -->
-      <circle cx="55" cy="115" r="42" fill="none" stroke="#0F3854" stroke-width="16" />
-      <circle cx="55" cy="115" r="20" fill="none" stroke="#0F3854" stroke-width="6" />
-      <circle cx="55" cy="115" r="8" fill="#0F3854" />
-
-      <!-- Front Wheel -->
-      <circle cx="215" cy="115" r="42" fill="none" stroke="#0F3854" stroke-width="16" />
-      <circle cx="215" cy="115" r="20" fill="none" stroke="#0F3854" stroke-width="6" />
-      <circle cx="215" cy="115" r="8" fill="#0F3854" />
-
-      <!-- Swingarm & Frame (Navy) -->
-      <path d="M 55 115 L 115 105 L 155 115 L 215 115" fill="none" stroke="#0F3854" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M 110 115 L 135 75 L 180 75 L 215 115" fill="none" stroke="#0F3854" stroke-width="8" />
-      
-      <!-- Exhaust Pipe -->
-      <path d="M 90 120 L 140 125 L 160 115" fill="none" stroke="#64748B" stroke-width="10" stroke-linecap="round" />
-
-      <!-- Bike Body / Fairing & Tank (Vibrant Orange) -->
-      <!-- Rear Seat / Tail Fairing -->
-      <path d="M 35 60 L 85 60 L 105 78 L 50 82 Z" fill="#FF5200" />
-      <!-- Main Tank & Front Cowl -->
-      <path d="M 90 62 L 135 40 L 185 35 L 210 65 L 180 95 L 130 92 L 105 78 Z" fill="#FF5200" />
-      <!-- Headlight / Windshield Area -->
-      <path d="M 170 36 L 195 20 L 210 40 L 190 52 Z" fill="#0F3854" />
-      <!-- Handlebars -->
-      <path d="M 175 30 L 165 18 M 165 18 L 180 18" fill="none" stroke="#0F3854" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
-      <!-- Front Fender -->
-      <path d="M 185 92 C 185 80, 225 80, 235 95" fill="none" stroke="#FF5200" stroke-width="9" stroke-linecap="round" />
-    </g>
-
-    <!-- Curved Base Lines / Swoosh -->
-    <path d="M 110 415 C 190 445, 310 445, 402 415" fill="none" stroke="#0F3854" stroke-width="12" stroke-linecap="round" />
-    <path d="M 160 438 C 220 458, 290 458, 350 438" fill="none" stroke="#0F3854" stroke-width="8" stroke-linecap="round" />
+  <rect width="512" height="512" rx="128" fill="#0F172A" />
+  
+  <g transform="translate(156, 156) scale(200)">
+    <!-- Minimalist stylized 'F' and fuel drop -->
+    <path d="M 0.2 0.8 L 0.2 0.2 L 0.8 0.2 L 0.8 0.4 L 0.4 0.4 L 0.4 0.5 L 0.7 0.5 L 0.7 0.7 L 0.4 0.7 L 0.4 0.8 Z" fill="#FF5200" />
+    <path d="M 0.6 0.65 C 0.6 0.65, 0.75 0.8, 0.75 0.88 C 0.75 0.95, 0.68 1.02, 0.6 1.02 C 0.52 1.02, 0.45 0.95, 0.45 0.88 C 0.45 0.8, 0.6 0.65, 0.6 0.65 Z" fill="#38BDF8" />
   </g>
 </svg>

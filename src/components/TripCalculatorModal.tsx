@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, Calculator, Flame, Save, Fuel, ArrowRight, Sparkles, Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { X, Calculator, Save, Check } from 'lucide-react';
 import { FuelLog } from '../types';
 import { Language, translations } from '../lib/translations';
 
@@ -22,15 +23,6 @@ export const TripCalculatorModal: React.FC<TripCalculatorModalProps> = ({
   const [totalFuelPrice, setTotalFuelPrice] = useState<string>('');
   const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
 
-  if (!isOpen) return null;
-
-  // Real-time calculations:
-  // Fuel Price per liter = P
-  // Distance = D
-  // Total Fuel Price = T
-  // Fuel Used (Liters) = T / P
-  // Mileage (KM/L) = D / Fuel Used
-  // Cost per KM (৳/KM) = T / D
   const P = parseFloat(fuelPricePerLiter) || 0;
   const D = parseFloat(distanceKm) || 0;
   const T = parseFloat(totalFuelPrice) || 0;
@@ -61,8 +53,16 @@ export const TripCalculatorModal: React.FC<TripCalculatorModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg m3-card bg-white dark:bg-[#121214] p-6 shadow-2xl border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white max-h-[90vh] overflow-y-auto">
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+            className="relative w-full max-w-lg m3-card bg-white dark:bg-[#121214] p-6 shadow-2xl border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white max-h-[90vh] overflow-y-auto"
+          >
         
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800/80 pb-4 mb-5">
@@ -211,7 +211,9 @@ export const TripCalculatorModal: React.FC<TripCalculatorModalProps> = ({
           </button>
         </div>
 
-      </div>
-    </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 };

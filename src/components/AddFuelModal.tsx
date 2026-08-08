@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Fuel, Flame, Calendar, Gauge, DollarSign, Calculator, FileText } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { X, Fuel } from 'lucide-react';
 import { FuelLog } from '../types';
 import { Language, translations } from '../lib/translations';
 
@@ -7,6 +8,8 @@ interface AddFuelModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddLog: (log: Omit<FuelLog, 'id'>) => void;
+  onEditLog?: (log: FuelLog) => void;
+  editItem?: FuelLog | null;
   latestOdometer?: number;
   lang?: Language;
 }
@@ -15,6 +18,8 @@ export const AddFuelModal: React.FC<AddFuelModalProps> = ({
   isOpen,
   onClose,
   onAddLog,
+  onEditLog,
+  editItem,
   latestOdometer = 42500,
   lang = 'en'
 }) => {
@@ -22,10 +27,38 @@ export const AddFuelModal: React.FC<AddFuelModalProps> = ({
   const [travelKm, setTravelKm] = useState<string>('');
   const [perLiterCost, setPerLiterCost] = useState<string>('145');
   const [totalCost, setTotalCost] = useState<string>('');
-  const [odometerKm, setOdometerKm] = useState<string>(latestOdometer > 0 ? (latestOdometer + 150).toString() : '');
+  const [odometerKm, setOdometerKm] = useState<string>(latestOdometer > 0 ? latestOdometer.toString() : '');
+  const [isManualOdometer, setIsManualOdometer] = useState<boolean>(false);
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState<string>('');
   const [error, setError] = useState<string>('');
+
+  useEffect(() => {
+    if (editItem && isOpen) {
+      setTravelKm(editItem.travelKm.toString());
+      setPerLiterCost(editItem.perLiterCost.toString());
+      setTotalCost(editItem.totalCost.toString());
+      setOdometerKm(editItem.odometerKm ? editItem.odometerKm.toString() : '');
+      setDate(editItem.date);
+      setNotes(editItem.notes || '');
+      setIsManualOdometer(true);
+    } else if (isOpen) {
+      setTravelKm('');
+      setPerLiterCost('145');
+      setTotalCost('');
+      setOdometerKm(latestOdometer > 0 ? latestOdometer.toString() : '');
+      setDate(new Date().toISOString().split('T')[0]);
+      setNotes('');
+      setIsManualOdometer(false);
+    }
+  }, [isOpen, editItem, latestOdometer]);
+
+  useEffect(() => {
+    if (latestOdometer > 0 && !isManualOdometer && !editItem) {
+      const travel = parseFloat(travelKm) || 0;
+      setOdometerKm((latestOdometer + travel).toString());
+    }
+  }, [travelKm, latestOdometer, isManualOdometer]);
 
   // Automatic real-time calculations:
   // Liters filled = Total Cost / Per Liter Cost
@@ -37,8 +70,6 @@ export const AddFuelModal: React.FC<AddFuelModalProps> = ({
   const litersFilled = numericPerLiterCost > 0 ? numericTotalCost / numericPerLiterCost : 0;
   const calculatedMileage = litersFilled > 0 ? numericTravelKm / litersFilled : 0;
 
-  if (!isOpen) return null;
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (numericTravelKm <= 0 || numericPerLiterCost <= 0 || numericTotalCost <= 0) {
@@ -46,24 +77,38 @@ export const AddFuelModal: React.FC<AddFuelModalProps> = ({
       return;
     }
 
-    onAddLog({
+    const payload = {
       date: date || new Date().toISOString().split('T')[0],
       travelKm: numericTravelKm,
       perLiterCost: numericPerLiterCost,
       totalCost: numericTotalCost,
       liters: litersFilled,
       efficiency: calculatedMileage,
-      fuelGrade: 'Fuel Log',
+      fuelGrade: editItem?.fuelGrade || 'Fuel Log',
       odometerKm: parseFloat(odometerKm) || undefined,
       notes: notes.trim() || undefined
-    });
+    };
+
+    if (editItem && onEditLog) {
+      onEditLog({ ...payload, id: editItem.id, userId: editItem.userId });
+    } else {
+      onAddLog(payload);
+    }
 
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg m3-card bg-white dark:bg-[#121214] p-6 shadow-2xl border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white max-h-[90vh] overflow-y-auto">
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+            className="relative w-full max-w-lg m3-card bg-white dark:bg-[#121214] p-6 shadow-2xl border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white max-h-[90vh] overflow-y-auto"
+          >
         
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800/80 pb-4 mb-5">
@@ -72,8 +117,8 @@ export const AddFuelModal: React.FC<AddFuelModalProps> = ({
               <Fuel className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-black tracking-tight">{t.addFuelTitle}</h3>
-              <p className="text-xs text-slate-500 dark:text-zinc-400">{t.addFuelDesc}</p>
+              <h3 className="text-lg font-black tracking-tight">{editItem ? 'Edit Fuel Log' : t.addFuelTitle}</h3>
+              <p className="text-xs text-slate-500 dark:text-zinc-400">{editItem ? 'Update your recorded fill-up.' : t.addFuelDesc}</p>
             </div>
           </div>
 
@@ -163,7 +208,10 @@ export const AddFuelModal: React.FC<AddFuelModalProps> = ({
                   type="number"
                   placeholder="42850"
                   value={odometerKm}
-                  onChange={(e) => setOdometerKm(e.target.value)}
+                  onChange={(e) => {
+                    setOdometerKm(e.target.value);
+                    setIsManualOdometer(true);
+                  }}
                   className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#FF5200]"
                 />
                 <span className="absolute right-3.5 top-2.5 text-xs text-slate-400 font-semibold">KM</span>
@@ -235,7 +283,9 @@ export const AddFuelModal: React.FC<AddFuelModalProps> = ({
 
         </form>
 
-      </div>
-    </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 };
