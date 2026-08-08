@@ -1,24 +1,38 @@
 {
+  "id": "fuelflow-pwa-app",
   "short_name": "FuelFlow",
   "name": "Fuel Flow - Vehicle & Fuel Tracker",
+  "description": "Track vehicle fuel efficiency, fuel logs, and maintenance services in real-time.",
   "icons": [
+    {
+      "src": "/pwa-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/pwa-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    },
     {
       "src": "/icon.svg",
       "type": "image/svg+xml",
       "sizes": "any",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/pwa-192.svg",
-      "type": "image/svg+xml",
-      "sizes": "192x192",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/pwa-512.svg",
-      "type": "image/svg+xml",
-      "sizes": "512x512",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ],
   "start_url": "/",
@@ -27,5 +41,22 @@
   "theme_color": "#FF5200",
   "display": "standalone",
   "orientation": "portrait",
-  "description": "Track vehicle fuel efficiency, fuel logs, and maintenance services in real-time."
+  "categories": ["utilities", "finance", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Add Fuel Log",
+      "short_name": "New Log",
+      "description": "Quickly record a new fuel fill-up",
+      "url": "/?action=new-log",
+      "icons": [{ "src": "/pwa-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Trip Calculator",
+      "short_name": "Calculator",
+      "description": "Calculate trip cost and fuel required",
+      "url": "/?action=calculator",
+      "icons": [{ "src": "/pwa-192.png", "sizes": "192x192" }]
+    }
+  ]
 }
+

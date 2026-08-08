@@ -576,10 +576,11 @@ export default function App() {
   const [showAddMaintenanceModal, setShowAddMaintenanceModal] = useState<boolean>(false);
   const [showTripCalculatorModal, setShowTripCalculatorModal] = useState<boolean>(false);
 
-  // PWA Install Prompt State
+  // PWA Install Prompt & Network Status State
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState<boolean>(false);
   const [showInstallGuideModal, setShowInstallGuideModal] = useState<boolean>(false);
+  const [updateAvailable, setUpdateAvailable] = useState<boolean>(false);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -588,12 +589,32 @@ export default function App() {
       setShowInstallBanner(true);
     };
 
+    const handleOnline = () => {
+      setSyncStatus('synced');
+      showToast(lang === 'bn' ? 'অনলাইন কানেকশন ফিরে এসেছে' : 'Network connection restored');
+    };
+
+    const handleOffline = () => {
+      setSyncStatus('offline');
+      showToast(lang === 'bn' ? 'আপনি অফলাইনে আছেন (লোকাল ব্যাকআপ চালু)' : 'You are currently offline (Local storage active)');
+    };
+
+    const handleUpdateAvailable = () => {
+      setUpdateAvailable(true);
+    };
+
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    window.addEventListener('pwa-update-available', handleUpdateAvailable);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('pwa-update-available', handleUpdateAvailable);
     };
-  }, []);
+  }, [lang]);
 
   const handleInstallPwa = async () => {
     if (deferredPrompt) {
@@ -605,6 +626,13 @@ export default function App() {
     } else {
       setShowInstallGuideModal(true);
     }
+  };
+
+  const handleApplyUpdate = () => {
+    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+    }
+    window.location.reload();
   };
 
   return (
@@ -625,6 +653,57 @@ export default function App() {
         syncStatus={syncStatus}
         onManualSync={handleManualSync}
       />
+
+      {/* PWA App Update Toast Banner */}
+      {updateAvailable && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-4 duration-300 w-full max-w-md px-4">
+          <div className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-[#FF5200] text-white shadow-2xl border border-white/20 text-xs font-bold">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 shrink-0 animate-pulse" />
+              <span>{lang === 'bn' ? 'অ্যাপের নতুন আপডেট উপলব্ধ!' : 'New app version available!'}</span>
+            </div>
+            <button
+              onClick={handleApplyUpdate}
+              className="px-3 py-1.5 rounded-xl bg-white text-[#FF5200] hover:bg-slate-100 transition font-extrabold text-[11px]"
+            >
+              {lang === 'bn' ? 'আপডেট রিলোড' : 'Update & Reload'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Floating PWA Install Prompt Banner */}
+      {showInstallBanner && deferredPrompt && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 duration-300 w-full max-w-md px-4">
+          <div className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-900/95 dark:bg-zinc-900/95 text-white backdrop-blur-md shadow-2xl border border-slate-700/80 dark:border-zinc-700/80 text-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-[#FF5200] flex items-center justify-center text-white shrink-0 font-black text-sm">
+                F
+              </div>
+              <div>
+                <p className="font-extrabold text-white text-xs">Fuel Flow App</p>
+                <p className="text-[10px] text-slate-400 dark:text-zinc-400">
+                  {lang === 'bn' ? 'হোম স্ক্রিনে ইনস্টল করুন' : 'Add to Home Screen'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowInstallBanner(false)}
+                className="px-2.5 py-1.5 rounded-xl text-slate-400 hover:text-white transition text-[11px]"
+              >
+                {lang === 'bn' ? 'পরে' : 'Later'}
+              </button>
+              <button
+                onClick={handleInstallPwa}
+                className="px-3.5 py-1.5 rounded-xl bg-[#FF5200] hover:bg-[#E04800] text-white font-extrabold transition shadow-lg shadow-[#FF5200]/30 text-[11px]"
+              >
+                {lang === 'bn' ? 'ইনস্টল' : 'Install'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Floating Toast Notification */}
       {toastMessage && (

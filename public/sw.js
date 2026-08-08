@@ -1,8 +1,13 @@
-const CACHE_NAME = 'fuelflow-cache-v1';
+const CACHE_NAME = 'fuelflow-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
-  '/manifest.json'
+  '/manifest.json',
+  '/icon.svg',
+  '/pwa-192.png',
+  '/pwa-512.png',
+  '/apple-touch-icon.png',
+  '/favicon.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -27,8 +32,14 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('fetch', (event) => {
-  // Do not intercept non-GET requests or Firebase/Firestore API endpoints
+  // Do not intercept non-GET requests or external API calls
   if (
     event.request.method !== 'GET' ||
     !event.request.url.startsWith('http') ||
@@ -39,11 +50,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Navigation requests: try network first, fallback to offline cache
+  // Navigation requests: try network first, fallback to offline index.html cache
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request).catch(() => {
-        return caches.match('/index.html');
+        return caches.match('/index.html') || caches.match('/');
       })
     );
     return;
@@ -66,3 +77,4 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
