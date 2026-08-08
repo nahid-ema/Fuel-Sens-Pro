@@ -53,9 +53,12 @@ export const Navbar: React.FC<NavbarProps> = ({
         
         {/* App Branding */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-[#FF5200] flex items-center justify-center text-white shadow-lg shadow-[#FF5200]/30 transition-transform hover:scale-105">
-            <CarFront className="w-5 h-5 stroke-[2.5]" />
-          </div>
+          <img 
+            src="/icon.svg" 
+            alt="FuelFlow Logo" 
+            className="w-10 h-10 rounded-2xl object-contain shadow-lg shadow-[#0F3854]/20 transition-transform hover:scale-105"
+            referrerPolicy="no-referrer" 
+          />
           <div>
             <div className="flex items-center gap-2">
               <span className="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white">

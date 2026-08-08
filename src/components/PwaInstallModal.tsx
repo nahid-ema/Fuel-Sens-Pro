@@ -30,9 +30,12 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({
 
         {/* Modal Header */}
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-2xl bg-[#FF5200] flex items-center justify-center text-white shadow-lg shadow-[#FF5200]/30">
-            <Download className="w-6 h-6 stroke-[2.5]" />
-          </div>
+          <img 
+            src="/icon.svg" 
+            alt="Fuel Flow Logo" 
+            className="w-12 h-12 rounded-2xl object-contain shadow-lg shadow-[#0F3854]/20" 
+            referrerPolicy="no-referrer"
+          />
           <div>
             <h2 className="text-lg font-extrabold tracking-tight">Install Fuel Flow</h2>
             <p className="text-xs text-slate-500 dark:text-zinc-400">Chrome Progressive Web Application (PWA)</p>

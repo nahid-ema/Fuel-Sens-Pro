@@ -677,9 +677,12 @@ export default function App() {
         <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 duration-300 w-full max-w-md px-4">
           <div className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-900/95 dark:bg-zinc-900/95 text-white backdrop-blur-md shadow-2xl border border-slate-700/80 dark:border-zinc-700/80 text-xs">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#FF5200] flex items-center justify-center text-white shrink-0 font-black text-sm">
-                F
-              </div>
+              <img 
+                src="/icon.svg" 
+                alt="Fuel Flow Logo" 
+                className="w-8 h-8 rounded-xl object-contain shrink-0" 
+                referrerPolicy="no-referrer"
+              />
               <div>
                 <p className="font-extrabold text-white text-xs">Fuel Flow App</p>
                 <p className="text-[10px] text-slate-400 dark:text-zinc-400">
